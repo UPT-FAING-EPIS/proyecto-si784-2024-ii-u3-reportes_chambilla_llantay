@@ -1,0 +1,30 @@
+{
+    "name": "josue/calidad-u2",
+    "description": "Proyecto de calidad de software - Unidad 2",
+    "type": "project",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Controllers\\": "src/Controllers/",
+            "Models\\": "src/Models/",
+            "Config\\": "src/Config/",
+            "Exceptions\\": "src/Exceptions/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "behat/mink-extension": "^2.3",
+        "behat/mink-selenium2-driver": "^1.7",
+        "dmore/chrome-mink-driver": "^2.9",
+        "php-webdriver/webdriver": "^1.15",
+        "emuse/behat-html-formatter": "^2.0"
+    }
+}
