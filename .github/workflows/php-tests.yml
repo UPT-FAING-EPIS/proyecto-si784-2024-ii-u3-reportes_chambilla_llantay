@@ -86,6 +86,9 @@ jobs:
         export DB_PASS=root
         export DB_NAME=test_db
         
+        # Crear directorio para mutations
+        mkdir -p public/mutations
+        
         # Primero ejecutar PHPUnit para generar la cobertura
         echo "Generando cobertura con PHPUnit..."
         XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml || true
@@ -97,7 +100,7 @@ jobs:
             "excludes": ["src/views", "src/Config"]
           },
           "logs": {
-            "html": "public/infection/infection.html"
+            "html": "public/mutations/index.html"
           },
           "mutators": {
             "@default": true
@@ -109,9 +112,6 @@ jobs:
           "testFrameworkOptions": "--no-configuration"
         }' > infection.temp.json
         
-        # Crear directorio para infection
-        mkdir -p public/infection
-        
         # Ejecutar Infection con la configuración temporal
         echo "Ejecutando análisis de mutación..."
         vendor/bin/infection \
@@ -121,7 +121,6 @@ jobs:
           --source=src \
           --only-covered \
           --skip-initial-tests \
-          --logger-html=public/infection/infection.html \
           --ignore-msi-with-no-mutations \
           --no-progress \
           --formatter=progress \
@@ -129,15 +128,14 @@ jobs:
           --min-covered-msi=0 || true
         
         # Verificar la generación del reporte
-        if [ -f "public/infection/infection.html" ]; then
-          echo "✓ Reporte de Infection generado correctamente"
-          ls -l public/infection/
+        echo "Verificando reporte generado..."
+        if [ -f "public/mutations/index.html" ]; then
+          echo "✓ Reporte de mutations generado correctamente"
+          ls -l public/mutations/
         else
-          echo "✗ Error al generar el reporte de Infection"
-          echo "Contenido del directorio src:"
-          ls -R src/
-          echo "Contenido del directorio coverage:"
-          ls -R coverage/coverage-xml/
+          echo "✗ Error: El reporte de mutations no se generó"
+          echo "Contenido de public:"
+          ls -la public/
         fi
         
         # Limpiar archivo temporal
