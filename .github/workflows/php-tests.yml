@@ -88,14 +88,17 @@ jobs:
         echo '{
           "source": {
             "directories": ["src"],
-            "excludes": ["src/views", "src/Config"]
+            "excludes": [
+              "src/Views",
+              "src/Config"
+            ]
           },
           "logs": {
-            "text": "public/mutations/infection.log",
-            "html": "public/mutations/index.html",
-            "summary": "public/mutations/summary.log",
-            "json": "public/mutations/infection.json",
-            "perMutator": "public/mutations/per-mutator.md"
+            "text": "./public/mutations/infection.log",
+            "html": "./public/mutations/index.html",
+            "summary": "./public/mutations/summary.log",
+            "json": "./public/mutations/infection.json",
+            "perMutator": "./public/mutations/per-mutator.md"
           },
           "mutators": {
             "@default": true
@@ -113,11 +116,14 @@ jobs:
           "minCoveredMsi": 0
         }' > infection.temp.json
         
-        # Primero ejecutar PHPUnit para generar la cobertura
+        # Limpiar cobertura anterior
+        rm -rf coverage
+        
+        # Generar cobertura nueva
         echo "Generando cobertura con PHPUnit..."
         XDEBUG_MODE=coverage vendor/bin/phpunit \
-          --coverage-xml=coverage/coverage-xml \
-          --log-junit=coverage/junit.xml \
+          --coverage-xml=./coverage/coverage-xml \
+          --log-junit=./coverage/junit.xml \
           --testsuite=Unit || true
         
         # Ejecutar Infection
@@ -125,7 +131,7 @@ jobs:
         vendor/bin/infection \
           --threads=4 \
           --configuration=infection.temp.json \
-          --coverage=coverage \
+          --coverage=./coverage \
           --only-covered \
           --skip-initial-tests \
           --ignore-msi-with-no-mutations \
@@ -140,12 +146,10 @@ jobs:
           ls -l public/mutations/
         else
           echo "✗ Error: El reporte HTML no se generó"
+          echo "Contenido de infection.temp.json:"
+          cat infection.temp.json
           echo "Contenido de public/mutations:"
           ls -la public/mutations/
-          echo "Contenido de coverage:"
-          ls -la coverage/
-          echo "Contenido de coverage/coverage-xml:"
-          ls -la coverage/coverage-xml/
         fi
         
         # Limpiar archivo temporal
