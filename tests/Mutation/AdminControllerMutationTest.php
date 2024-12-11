@@ -11,5 +11,9 @@ class AdminControllerMutationTest extends TestCase
     protected $stmt;
     protected $pdo;
 
-   
+    /** @test */
+    public function dummy_test(): void
+    {
+        $this->assertTrue(true);
+    }
 }

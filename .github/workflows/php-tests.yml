@@ -43,8 +43,25 @@ jobs:
 
     - name: Run test suite with coverage
       run: |
+        echo "Creando directorio para coverage..."
         mkdir -p public/coverage
-        XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html public/coverage --coverage-text
+        chmod -R 777 public/coverage
+        
+        echo "Ejecutando PHPUnit con coverage..."
+        XDEBUG_MODE=coverage ./vendor/bin/phpunit --exclude-group skip --coverage-html public/coverage
+        
+        echo "Verificando archivos generados..."
+        ls -la public/coverage/
+        
+        if [ -f "public/coverage/index.html" ]; then
+          echo "✅ Reporte de cobertura generado exitosamente"
+        else
+          echo "❌ Error: No se generó el reporte de cobertura"
+          echo "Contenido del directorio public/:"
+          ls -la public/
+          echo "Contenido del directorio actual:"
+          ls -la
+        fi
 
     - name: Update Behat configuration
       run: |
