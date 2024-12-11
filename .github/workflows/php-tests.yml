@@ -80,92 +80,40 @@ jobs:
       run: |
         echo "Ejecutando Infection tests..."
         
-        # Crear directorio para mutations y coverage
-        echo "Creando directorios..."
+        # Crear directorio para mutations
         mkdir -p public/mutations
         mkdir -p coverage
         
-        # Generar cobertura con PHPUnit primero
+        # Generar cobertura primero
         echo "Generando cobertura con PHPUnit..."
         XDEBUG_MODE=coverage vendor/bin/phpunit \
           --coverage-xml=coverage/coverage-xml \
-          --coverage-html=coverage/html \
           --log-junit=coverage/junit.xml \
           --testsuite=Unit \
           --coverage-filter=src || true
-        
-        # Verificar la generación de cobertura
-        echo "Verificando archivos de cobertura..."
-        if [ -f "coverage/coverage-xml/index.xml" ]; then
-          echo "✓ Archivo index.xml generado correctamente"
-        else
-          echo "✗ Error: index.xml no se generó"
-          echo "Contenido de coverage/coverage-xml:"
-          ls -la coverage/coverage-xml/
-        fi
-        
-        # Crear archivo de configuración temporal para Infection
-        echo '{
-          "source": {
-            "directories": ["src"],
-            "excludes": [
-              "src/Views",
-              "src/Config"
-            ]
-          },
-          "logs": {
-            "text": "public/mutations/infection.log",
-            "html": "public/mutations/index.html",
-            "summary": "public/mutations/summary.log",
-            "json": "public/mutations/infection.json",
-            "perMutator": "public/mutations/per-mutator.md"
-          },
-          "mutators": {
-            "@default": true
-          },
-          "testFramework": "phpunit",
-          "bootstrap": "vendor/autoload.php",
-          "initialTestsPhpOptions": "-d xdebug.mode=coverage",
-          "testFrameworkOptions": "--testsuite=Unit",
-          "phpUnit": {
-            "configDir": ".",
-            "customPath": "vendor/bin/phpunit"
-          },
-          "timeout": 10,
-          "minMsi": 0,
-          "minCoveredMsi": 0
-        }' > infection.temp.json
         
         # Ejecutar Infection
         echo "Ejecutando análisis de mutación..."
         vendor/bin/infection \
           --threads=4 \
-          --configuration=infection.temp.json \
           --coverage=coverage \
+          --source=src \
           --only-covered \
           --skip-initial-tests \
           --ignore-msi-with-no-mutations \
           --no-progress \
           --show-mutations \
-          --debug || true
+          --html=public/mutations/index.html || true
         
-        # Verificar la generación de reportes
-        echo "Verificando reportes generados..."
+        # Verificar el reporte
         if [ -f "public/mutations/index.html" ]; then
-          echo "✓ Reporte HTML generado correctamente"
+          echo "✓ Reporte de mutations generado correctamente"
           ls -l public/mutations/
         else
-          echo "✗ Error: El reporte HTML no se generó"
-          echo "Contenido de infection.temp.json:"
-          cat infection.temp.json
+          echo "✗ Error: El reporte de mutations no se generó"
           echo "Contenido de public/mutations:"
           ls -la public/mutations/
-          echo "Contenido de coverage:"
-          ls -la coverage/
         fi
-        
-        # Limpiar archivo temporal
-        rm infection.temp.json
 
     - name: Verify Mutations Report
       run: |
