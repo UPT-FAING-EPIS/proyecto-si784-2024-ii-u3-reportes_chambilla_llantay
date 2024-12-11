@@ -636,7 +636,7 @@
     </file>
     <file name="C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php">
       <class name="Controllers\UserController" namespace="global">
-        <metrics complexity="16" methods="8" coveredmethods="7" conditionals="0" coveredconditionals="0" statements="54" coveredstatements="45" elements="62" coveredelements="52"/>
+        <metrics complexity="19" methods="8" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="58" coveredstatements="48" elements="66" coveredelements="54"/>
       </class>
       <line num="10" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="33"/>
       <line num="11" type="stmt" count="33"/>
@@ -831,12 +831,12 @@
     </file>
     <file name="C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\autoload.php">
       <line num="2" type="stmt" count="1"/>
-      <line num="4" type="stmt" count="1"/>
-      <line num="5" type="stmt" count="1"/>
-      <line num="7" type="stmt" count="1"/>
+      <line num="4" type="stmt" count="2"/>
+      <line num="5" type="stmt" count="2"/>
+      <line num="7" type="stmt" count="2"/>
       <line num="8" type="stmt" count="0"/>
       <line num="9" type="stmt" count="0"/>
-      <line num="11" type="stmt" count="1"/>
+      <line num="11" type="stmt" count="2"/>
       <line num="12" type="stmt" count="1"/>
       <metrics loc="12" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="8" coveredstatements="6" elements="8" coveredelements="6"/>
     </file>
@@ -848,6 +848,6 @@
       <line num="11" type="stmt" count="0"/>
       <metrics loc="13" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="5" coveredstatements="0" elements="5" coveredelements="0"/>
     </file>
-    <metrics files="15" loc="1288" ncloc="1238" classes="13" methods="130" coveredmethods="107" conditionals="0" coveredconditionals="0" statements="691" coveredstatements="593" elements="821" coveredelements="700"/>
+    <metrics files="15" loc="1297" ncloc="1245" classes="13" methods="130" coveredmethods="106" conditionals="0" coveredconditionals="0" statements="695" coveredstatements="596" elements="825" coveredelements="702"/>
   </project>
 </coverage>
