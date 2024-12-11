@@ -45,7 +45,7 @@ jobs:
       run: |
         mkdir -p public/coverage
         echo "Ejecutando pruebas unitarias con cobertura..."
-        XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html public/coverage --coverage-text
+        XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html public/coverage --coverage-text --stop-on-warning --no-interaction
         
     - name: Verify Coverage Report
       run: |
