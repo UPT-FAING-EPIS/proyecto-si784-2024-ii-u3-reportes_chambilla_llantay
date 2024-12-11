@@ -743,4 +743,59 @@ class AdminControllerTest extends TestCase
         $this->adminController->getTotalPendings();
     }
 
+    /** @test */
+    public function testUpdateProductWithEmptyData(): void
+    {
+        // Caso 1: Datos vacíos
+        $postDataEmpty = [
+            'update_p_id' => '',
+            'update_name' => '',
+            'update_price' => ''
+        ];
+
+        $files = [
+            'update_image' => [
+                'name' => ''
+            ]
+        ];
+
+        $result = $this->adminController->updateProduct($postDataEmpty, $files);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Datos del producto inválidos', $result['message']);
+
+        // Caso 2: Datos null
+        $postDataNull = [
+            'update_p_id' => null,
+            'update_name' => null,
+            'update_price' => null
+        ];
+
+        $result = $this->adminController->updateProduct($postDataNull, $files);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Datos del producto inválidos', $result['message']);
+    }
+
+    /** @test */
+    public function testUpdateProductWithInvalidPrice(): void
+    {
+        $postData = [
+            'update_p_id' => 1,
+            'update_name' => 'Producto Test',
+            'update_price' => 'no-es-precio'  // Precio inválido
+        ];
+
+        $files = [
+            'update_image' => [
+                'name' => ''
+            ]
+        ];
+
+        $result = $this->adminController->updateProduct($postData, $files);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Precio inválido', $result['message']);
+    }
+
 }

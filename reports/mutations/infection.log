@@ -301,13 +301,43 @@ Escaped mutants:
              if ($fullPath === false || strpos($fullPath, $uploadDir) !== 0) {
 
 
-21) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:240    [M] MethodCallRemoval
+21) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:240    [M] LogicalOr
 
 --- Original
 +++ New
 @@ @@
      {
          try {
+             // Validar que los datos no estén vacíos
+-            if (empty($postData['update_p_id']) || empty($postData['update_name']) || empty($postData['update_price'])) {
++            if (empty($postData['update_p_id']) && empty($postData['update_name']) || empty($postData['update_price'])) {
+                 return ['success' => false, 'message' => 'Datos del producto inválidos'];
+             }
+             // Validar que el precio sea numérico
+
+
+22) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:240    [M] LogicalOr
+
+--- Original
++++ New
+@@ @@
+     {
+         try {
+             // Validar que los datos no estén vacíos
+-            if (empty($postData['update_p_id']) || empty($postData['update_name']) || empty($postData['update_price'])) {
++            if ((empty($postData['update_p_id']) || empty($postData['update_name'])) && empty($postData['update_price'])) {
+                 return ['success' => false, 'message' => 'Datos del producto inválidos'];
+             }
+             // Validar que el precio sea numérico
+
+
+23) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:258    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+                 return ['success' => false, 'message' => 'Precio inválido'];
+             }
              $product = new Product();
 -            $product->setId($postData['update_p_id']);
 +            
@@ -316,12 +346,12 @@ Escaped mutants:
              if (!empty($files['update_image']['name'])) {
 
 
-22) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:241    [M] MethodCallRemoval
+24) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:259    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-         try {
+             }
              $product = new Product();
              $product->setId($postData['update_p_id']);
 -            $product->setName($postData['update_name']);
@@ -331,22 +361,22 @@ Escaped mutants:
                  if ($files['update_image']['size'] > 2000000) {
 
 
-23) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:242    [M] MethodCallRemoval
+25) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:268    [M] LogicalNot
 
 --- Original
 +++ New
 @@ @@
-             $product = new Product();
-             $product->setId($postData['update_p_id']);
-             $product->setName($postData['update_name']);
--            $product->setPrice($postData['update_price']);
-+            
-             if (!empty($files['update_image']['name'])) {
-                 if ($files['update_image']['size'] > 2000000) {
                      return ['success' => false, 'message' => 'El tamaño de la imagen es demasiado grande'];
+                 }
+                 // Eliminar imagen anterior de forma segura
+-                if (!empty($postData['update_old_image'])) {
++                if (empty($postData['update_old_image'])) {
+                     $this->handleImageDelete($postData['update_old_image']);
+                 }
+                 // Generar nombre único para la nueva imagen
 
 
-24) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:251    [M] MethodCallRemoval
+26) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:269    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -361,97 +391,7 @@ Escaped mutants:
                  $extension = strtolower(pathinfo($files['update_image']['name'], PATHINFO_EXTENSION));
 
 
-25) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:256    [M] Concat
-
---- Original
-+++ New
-@@ @@
-                 }
-                 // Generar nombre único para la nueva imagen
-                 $extension = strtolower(pathinfo($files['update_image']['name'], PATHINFO_EXTENSION));
--                $newImageName = uniqid() . '.' . $extension;
-+                $newImageName = '.' . uniqid() . $extension;
-                 $product->setImage($newImageName);
-                 // Subir nueva imagen
-                 move_uploaded_file($files['update_image']['tmp_name'], self::UPLOAD_PATH . $newImageName);
-
-
-26) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:256    [M] ConcatOperandRemoval
-
---- Original
-+++ New
-@@ @@
-                 }
-                 // Generar nombre único para la nueva imagen
-                 $extension = strtolower(pathinfo($files['update_image']['name'], PATHINFO_EXTENSION));
--                $newImageName = uniqid() . '.' . $extension;
-+                $newImageName = '.' . $extension;
-                 $product->setImage($newImageName);
-                 // Subir nueva imagen
-                 move_uploaded_file($files['update_image']['tmp_name'], self::UPLOAD_PATH . $newImageName);
-
-
-27) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:256    [M] ConcatOperandRemoval
-
---- Original
-+++ New
-@@ @@
-                 }
-                 // Generar nombre único para la nueva imagen
-                 $extension = strtolower(pathinfo($files['update_image']['name'], PATHINFO_EXTENSION));
--                $newImageName = uniqid() . '.' . $extension;
-+                $newImageName = uniqid() . $extension;
-                 $product->setImage($newImageName);
-                 // Subir nueva imagen
-                 move_uploaded_file($files['update_image']['tmp_name'], self::UPLOAD_PATH . $newImageName);
-
-
-28) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:256    [M] Concat
-
---- Original
-+++ New
-@@ @@
-                 }
-                 // Generar nombre único para la nueva imagen
-                 $extension = strtolower(pathinfo($files['update_image']['name'], PATHINFO_EXTENSION));
--                $newImageName = uniqid() . '.' . $extension;
-+                $newImageName = uniqid() . $extension . '.';
-                 $product->setImage($newImageName);
-                 // Subir nueva imagen
-                 move_uploaded_file($files['update_image']['tmp_name'], self::UPLOAD_PATH . $newImageName);
-
-
-29) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:256    [M] ConcatOperandRemoval
-
---- Original
-+++ New
-@@ @@
-                 }
-                 // Generar nombre único para la nueva imagen
-                 $extension = strtolower(pathinfo($files['update_image']['name'], PATHINFO_EXTENSION));
--                $newImageName = uniqid() . '.' . $extension;
-+                $newImageName = uniqid() . '.';
-                 $product->setImage($newImageName);
-                 // Subir nueva imagen
-                 move_uploaded_file($files['update_image']['tmp_name'], self::UPLOAD_PATH . $newImageName);
-
-
-30) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:257    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-                 // Generar nombre único para la nueva imagen
-                 $extension = strtolower(pathinfo($files['update_image']['name'], PATHINFO_EXTENSION));
-                 $newImageName = uniqid() . '.' . $extension;
--                $product->setImage($newImageName);
-+                
-                 // Subir nueva imagen
-                 move_uploaded_file($files['update_image']['tmp_name'], self::UPLOAD_PATH . $newImageName);
-                 $stmt = $this->conn->prepare("UPDATE `products` SET name = ?, price = ?, image = ? WHERE id = ?");
-
-
-31) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:260    [M] FunctionCallRemoval
+27) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:278    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -467,7 +407,7 @@ Escaped mutants:
              } else {
 
 
-32) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:262    [M] Concat
+28) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:280    [M] Concat
 
 --- Original
 +++ New
@@ -482,7 +422,7 @@ Escaped mutants:
              } else {
 
 
-33) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:262    [M] ConcatOperandRemoval
+29) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:280    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -497,7 +437,7 @@ Escaped mutants:
              } else {
 
 
-34) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:262    [M] ConcatOperandRemoval
+30) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:280    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -512,7 +452,22 @@ Escaped mutants:
              } else {
 
 
-35) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:269    [M] ArrayItemRemoval
+31) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:284    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+                 // Subir nueva imagen
+                 move_uploaded_file($files['update_image']['tmp_name'], self::UPLOAD_PATH . $newImageName);
+                 $stmt = $this->conn->prepare("UPDATE `products` SET name = ?, price = ?, image = ? WHERE id = ?");
+-                $params = [$product->getName(), $product->getPrice(), $product->getImage(), $product->getId()];
++                $params = [$product->getPrice(), $product->getImage(), $product->getId()];
+             } else {
+                 $stmt = $this->conn->prepare("UPDATE `products` SET name = ?, price = ? WHERE id = ?");
+                 $params = [$product->getName(), $product->getPrice(), $product->getId()];
+
+
+32) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:287    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -527,7 +482,97 @@ Escaped mutants:
                  return ['success' => true, 'message' => 'Producto actualizado exitosamente'];
 
 
-36) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:288    [M] MethodCallRemoval
+33) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:296    [M] Concat
+
+--- Original
++++ New
+@@ @@
+             }
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         } catch (\Exception $e) {
+-            error_log("Error al actualizar producto: " . $e->getMessage());
++            error_log($e->getMessage() . "Error al actualizar producto: ");
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         }
+     }
+
+
+34) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:296    [M] ConcatOperandRemoval
+
+--- Original
++++ New
+@@ @@
+             }
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         } catch (\Exception $e) {
+-            error_log("Error al actualizar producto: " . $e->getMessage());
++            error_log($e->getMessage());
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         }
+     }
+
+
+35) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:296    [M] ConcatOperandRemoval
+
+--- Original
++++ New
+@@ @@
+             }
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         } catch (\Exception $e) {
+-            error_log("Error al actualizar producto: " . $e->getMessage());
++            error_log("Error al actualizar producto: ");
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         }
+     }
+
+
+36) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:296    [M] FunctionCallRemoval
+
+--- Original
++++ New
+@@ @@
+             }
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         } catch (\Exception $e) {
+-            error_log("Error al actualizar producto: " . $e->getMessage());
++            
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         }
+     }
+
+
+37) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:297    [M] ArrayItemRemoval
+
+--- Original
++++ New
+@@ @@
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         } catch (\Exception $e) {
+             error_log("Error al actualizar producto: " . $e->getMessage());
+-            return ['success' => false, 'message' => 'Error al actualizar el producto'];
++            return ['message' => 'Error al actualizar el producto'];
+         }
+     }
+     public function getAllProducts()
+
+
+38) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:298    [M] FalseValue
+
+--- Original
++++ New
+@@ @@
+             return ['success' => false, 'message' => 'Error al actualizar el producto'];
+         } catch (\Exception $e) {
+             error_log("Error al actualizar producto: " . $e->getMessage());
+-            return ['success' => false, 'message' => 'Error al actualizar el producto'];
++            return ['success' => true, 'message' => 'Error al actualizar el producto'];
+         }
+     }
+     public function getAllProducts()
+
+
+39) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:309    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -542,112 +587,22 @@ Escaped mutants:
              $product->setImage($row['image']);
 
 
-37) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:299    [M] MethodCallRemoval
+40) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:312    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-     public function getAllOrders()
-     {
-         $stmt = $this->conn->prepare("SELECT * FROM `orders`");
--        $stmt->execute();
-+        
-         $orders = [];
-         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-             $order = new Order();
-
-
-38) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:303    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-         $orders = [];
-         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-             $order = new Order();
--            $order->setId($row['id']);
+             $product->setId($row['id']);
+             $product->setName($row['name']);
+             $product->setPrice($row['price']);
+-            $product->setImage($row['image']);
 +            
-             $order->setUserId($row['user_id']);
-             $order->setPlacedOn($row['placed_on']);
-             $order->setName($row['name']);
+             $products[] = $product;
+         }
+         return $products;
 
 
-39) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:304    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-             $order = new Order();
-             $order->setId($row['id']);
--            $order->setUserId($row['user_id']);
-+            
-             $order->setPlacedOn($row['placed_on']);
-             $order->setName($row['name']);
-             $order->setNumber($row['number']);
-
-
-40) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:305    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-             $order = new Order();
-             $order->setId($row['id']);
-             $order->setUserId($row['user_id']);
--            $order->setPlacedOn($row['placed_on']);
-+            
-             $order->setName($row['name']);
-             $order->setNumber($row['number']);
-             $order->setEmail($row['email']);
-
-
-41) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:307    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-             $order->setUserId($row['user_id']);
-             $order->setPlacedOn($row['placed_on']);
-             $order->setName($row['name']);
--            $order->setNumber($row['number']);
-+            
-             $order->setEmail($row['email']);
-             $order->setAddress($row['address']);
-             $order->setTotalProducts($row['total_products']);
-
-
-42) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:308    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-             $order->setPlacedOn($row['placed_on']);
-             $order->setName($row['name']);
-             $order->setNumber($row['number']);
--            $order->setEmail($row['email']);
-+            
-             $order->setAddress($row['address']);
-             $order->setTotalProducts($row['total_products']);
-             $order->setTotalPrice($row['total_price']);
-
-
-43) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:309    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-             $order->setName($row['name']);
-             $order->setNumber($row['number']);
-             $order->setEmail($row['email']);
--            $order->setAddress($row['address']);
-+            
-             $order->setTotalProducts($row['total_products']);
-             $order->setTotalPrice($row['total_price']);
-             $order->setMethod($row['method']);
-
-
-44) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:310    [M] MethodCallRemoval
+41) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:331    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -662,97 +617,97 @@ Escaped mutants:
              $order->setPaymentStatus($row['payment_status']);
 
 
-45) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:312    [M] MethodCallRemoval
+42) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:334    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-             $order->setAddress($row['address']);
              $order->setTotalProducts($row['total_products']);
              $order->setTotalPrice($row['total_price']);
--            $order->setMethod($row['method']);
+             $order->setMethod($row['method']);
+-            $order->setPaymentStatus($row['payment_status']);
 +            
-             $order->setPaymentStatus($row['payment_status']);
              $orders[] = $order;
          }
+         return $orders;
 
 
-46) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:322    [M] MethodCallRemoval
+43) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:344    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-     {
          try {
              $order = new Order();
--            $order->setId($orderId);
+             $order->setId($orderId);
+-            $order->setPaymentStatus($status);
 +            
-             $order->setPaymentStatus($status);
              $stmt = $this->conn->prepare("UPDATE `orders` SET payment_status = ? WHERE id = ?");
              return $stmt->execute([$order->getPaymentStatus(), $order->getId()]);
+         } catch (\PDOException $e) {
 
 
-47) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:349    [M] MethodCallRemoval
+44) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:349    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-     {
-         try {
-             $stmt = $this->conn->prepare("SELECT * FROM `users`");
--            $stmt->execute();
+             $stmt = $this->conn->prepare("UPDATE `orders` SET payment_status = ? WHERE id = ?");
+             return $stmt->execute([$order->getPaymentStatus(), $order->getId()]);
+         } catch (\PDOException $e) {
+-            $this->handleDatabaseError($e);
 +            
-             $users = [];
-             foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                 $user = new User();
+             return false;
+         }
+     }
 
 
-48) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:354    [M] MethodCallRemoval
+45) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:350    [M] FalseValue
 
 --- Original
 +++ New
 @@ @@
-             $users = [];
-             foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                 $user = new User();
--                $user->setId($row['id']);
-+                
+             return $stmt->execute([$order->getPaymentStatus(), $order->getId()]);
+         } catch (\PDOException $e) {
+             $this->handleDatabaseError($e);
+-            return false;
++            return true;
+         }
+     }
+     public function deleteOrder($orderId)
+
+
+46) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:378    [M] MethodCallRemoval
+
+--- Original
++++ New
+@@ @@
+                 $user->setId($row['id']);
                  $user->setName($row['name']);
                  $user->setEmail($row['email']);
-                 $user->setUserType($row['user_type']);
+-                $user->setUserType($row['user_type']);
++                
+                 $users[] = $user;
+             }
+             return $users;
 
 
-49) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:386    [M] MethodCallRemoval
+47) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:383    [M] MethodCallRemoval
 
 --- Original
 +++ New
 @@ @@
-             $messages = [];
-             foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                 $message = new Message();
--                $message->setId($row['id']);
-+                
-                 $message->setUserId($row['user_id']);
-                 $message->setMessage($row['message']);
-                 $message->setName($row['name']);
+             }
+             return $users;
+         } catch (\PDOException $e) {
+-            $this->handleDatabaseError($e);
++            
+             return [];
+         }
+     }
 
 
-50) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\AdminController.php:387    [M] MethodCallRemoval
-
---- Original
-+++ New
-@@ @@
-             foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                 $message = new Message();
-                 $message->setId($row['id']);
--                $message->setUserId($row['user_id']);
-+                
-                 $message->setMessage($row['message']);
-                 $message->setName($row['name']);
-                 $message->setEmail($row['email']);
-
-
-51) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] Concat
+48) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] Concat
 
 --- Original
 +++ New
@@ -767,7 +722,7 @@ Escaped mutants:
              error_log("Error al enviar mensaje: " . $e->getMessage());
 
 
-52) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] ConcatOperandRemoval
+49) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -782,7 +737,7 @@ Escaped mutants:
              error_log("Error al enviar mensaje: " . $e->getMessage());
 
 
-53) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] ConcatOperandRemoval
+50) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -797,7 +752,7 @@ Escaped mutants:
              error_log("Error al enviar mensaje: " . $e->getMessage());
 
 
-54) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] FunctionCallRemoval
+51) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:58    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -813,7 +768,7 @@ Escaped mutants:
              error_log("Error al enviar mensaje: " . $e->getMessage());
 
 
-55) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] Concat
+52) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] Concat
 
 --- Original
 +++ New
@@ -829,7 +784,7 @@ Escaped mutants:
  }
 
 
-56) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] ConcatOperandRemoval
+53) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -845,7 +800,7 @@ Escaped mutants:
  }
 
 
-57) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] ConcatOperandRemoval
+54) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -861,7 +816,7 @@ Escaped mutants:
  }
 
 
-58) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] FunctionCallRemoval
+55) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:61    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -877,7 +832,7 @@ Escaped mutants:
  }
 
 
-59) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:62    [M] Concat
+56) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:62    [M] Concat
 
 --- Original
 +++ New
@@ -892,7 +847,7 @@ Escaped mutants:
  }
 
 
-60) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:62    [M] ConcatOperandRemoval
+57) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ContactController.php:62    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -907,7 +862,7 @@ Escaped mutants:
  }
 
 
-61) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:40    [M] MethodCallRemoval
+58) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:40    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -922,7 +877,7 @@ Escaped mutants:
      }
 
 
-62) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:73    [M] MethodCallRemoval
+59) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:73    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -937,7 +892,7 @@ Escaped mutants:
                  $order->setAddress($row['address']);
 
 
-63) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:74    [M] MethodCallRemoval
+60) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:74    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -952,7 +907,7 @@ Escaped mutants:
                  $order->setTotalProducts($row['total_products']);
 
 
-64) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:75    [M] MethodCallRemoval
+61) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:75    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -967,7 +922,7 @@ Escaped mutants:
                  $order->setTotalPrice($row['total_price']);
 
 
-65) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:76    [M] MethodCallRemoval
+62) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:76    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -982,7 +937,7 @@ Escaped mutants:
                  $orders[] = $order;
 
 
-66) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:77    [M] MethodCallRemoval
+63) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:77    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -997,7 +952,7 @@ Escaped mutants:
              }
 
 
-67) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:78    [M] MethodCallRemoval
+64) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:78    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1012,7 +967,7 @@ Escaped mutants:
              return $orders;
 
 
-68) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:108    [M] LessThan
+65) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:108    [M] LessThan
 
 --- Original
 +++ New
@@ -1027,7 +982,7 @@ Escaped mutants:
              }
 
 
-69) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:114    [M] DecrementInteger
+66) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:114    [M] DecrementInteger
 
 --- Original
 +++ New
@@ -1042,7 +997,7 @@ Escaped mutants:
                  $products[] = $item['name'] . ' (' . $item['quantity'] . ')';
 
 
-70) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:116    [M] Foreach_
+67) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:116    [M] Foreach_
 
 --- Original
 +++ New
@@ -1057,7 +1012,7 @@ Escaped mutants:
              }
 
 
-71) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] Concat
+68) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] Concat
 
 --- Original
 +++ New
@@ -1072,7 +1027,7 @@ Escaped mutants:
              $totalProducts = implode(', ', $products);
 
 
-72) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
+69) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1087,7 +1042,7 @@ Escaped mutants:
              $totalProducts = implode(', ', $products);
 
 
-73) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
+70) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1102,7 +1057,7 @@ Escaped mutants:
              $totalProducts = implode(', ', $products);
 
 
-74) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] Concat
+71) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] Concat
 
 --- Original
 +++ New
@@ -1117,7 +1072,7 @@ Escaped mutants:
              $totalProducts = implode(', ', $products);
 
 
-75) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
+72) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1132,7 +1087,7 @@ Escaped mutants:
              $totalProducts = implode(', ', $products);
 
 
-76) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] Concat
+73) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] Concat
 
 --- Original
 +++ New
@@ -1147,7 +1102,7 @@ Escaped mutants:
              $totalProducts = implode(', ', $products);
 
 
-77) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
+74) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:117    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1162,7 +1117,7 @@ Escaped mutants:
              $totalProducts = implode(', ', $products);
 
 
-78) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
+75) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
 
 --- Original
 +++ New
@@ -1177,7 +1132,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-79) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
+76) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1192,7 +1147,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-80) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
+77) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
 
 --- Original
 +++ New
@@ -1207,7 +1162,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-81) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
+78) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1222,7 +1177,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-82) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
+79) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
 
 --- Original
 +++ New
@@ -1237,7 +1192,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-83) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
+80) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1252,7 +1207,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-84) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
+81) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
 
 --- Original
 +++ New
@@ -1267,7 +1222,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-85) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
+82) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1282,7 +1237,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-86) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
+83) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] Concat
 
 --- Original
 +++ New
@@ -1297,7 +1252,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-87) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
+84) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:123    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1312,7 +1267,7 @@ Escaped mutants:
              $order->setTotalProducts($totalProducts);
 
 
-88) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:130    [M] MethodCallRemoval
+85) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:130    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1328,7 +1283,7 @@ Escaped mutants:
              // Verificar si la orden ya existe
 
 
-89) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:131    [M] MethodCallRemoval
+86) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:131    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1343,7 +1298,7 @@ Escaped mutants:
              $stmt = $this->conn->prepare("SELECT * FROM orders WHERE \r\n                name = ? AND number = ? AND email = ? AND \r\n                method = ? AND address = ? AND \r\n                total_products = ? AND total_price = ?");
 
 
-90) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:132    [M] MethodCallRemoval
+87) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:132    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1358,7 +1313,7 @@ Escaped mutants:
              $stmt->execute([$order->getName(), $order->getNumber(), $order->getEmail(), $order->getMethod(), $order->getAddress(), $order->getTotalProducts(), $order->getTotalPrice()]);
 
 
-91) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:140    [M] ArrayItemRemoval
+88) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:140    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -1373,7 +1328,7 @@ Escaped mutants:
              }
 
 
-92) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:160    [M] ArrayItemRemoval
+89) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:160    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -1388,7 +1343,7 @@ Escaped mutants:
              return ['success' => true, 'message' => '¡Pedido realizado con éxito!'];
 
 
-93) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:190    [M] ArrayItemRemoval
+90) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:190    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -1403,7 +1358,7 @@ Escaped mutants:
      {
 
 
-94) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:202    [M] MethodCallRemoval
+91) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:202    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1418,7 +1373,7 @@ Escaped mutants:
                  $order->setAddress($row['address']);
 
 
-95) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] Concat
+92) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] Concat
 
 --- Original
 +++ New
@@ -1433,7 +1388,7 @@ Escaped mutants:
      }
 
 
-96) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] ConcatOperandRemoval
+93) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1448,7 +1403,7 @@ Escaped mutants:
      }
 
 
-97) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] ConcatOperandRemoval
+94) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1463,7 +1418,7 @@ Escaped mutants:
      }
 
 
-98) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] FunctionCallRemoval
+95) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:214    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -1478,7 +1433,7 @@ Escaped mutants:
      }
 
 
-99) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:232    [M] MethodCallRemoval
+96) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\OrderController.php:232    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1493,7 +1448,7 @@ Escaped mutants:
      }
 
 
-100) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:17    [M] DecrementInteger
+97) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:17    [M] DecrementInteger
 
 --- Original
 +++ New
@@ -1508,7 +1463,7 @@ Escaped mutants:
              $query = "SELECT * FROM products LIMIT :limit";
 
 
-101) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:17    [M] IncrementInteger
+98) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:17    [M] IncrementInteger
 
 --- Original
 +++ New
@@ -1523,7 +1478,7 @@ Escaped mutants:
              $query = "SELECT * FROM products LIMIT :limit";
 
 
-102) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:21    [M] MethodCallRemoval
+99) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:21    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1538,7 +1493,7 @@ Escaped mutants:
              foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
 
 
-103) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:27    [M] MethodCallRemoval
+100) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:27    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1553,7 +1508,7 @@ Escaped mutants:
                  $product->setImage($row['image']);
 
 
-104) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:29    [M] MethodCallRemoval
+101) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:29    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1568,7 +1523,7 @@ Escaped mutants:
              }
 
 
-105) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:30    [M] MethodCallRemoval
+102) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:30    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1583,7 +1538,7 @@ Escaped mutants:
              return $products;
 
 
-106) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] Concat
+103) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] Concat
 
 --- Original
 +++ New
@@ -1598,7 +1553,7 @@ Escaped mutants:
      }
 
 
-107) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] ConcatOperandRemoval
+104) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1613,7 +1568,7 @@ Escaped mutants:
      }
 
 
-108) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] ConcatOperandRemoval
+105) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1628,7 +1583,7 @@ Escaped mutants:
      }
 
 
-109) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] FunctionCallRemoval
+106) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:35    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -1643,7 +1598,7 @@ Escaped mutants:
      }
 
 
-110) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:62    [M] ArrayItemRemoval
+107) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:62    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -1658,7 +1613,7 @@ Escaped mutants:
              error_log("Error al añadir al carrito: " . $e->getMessage());
 
 
-111) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] Concat
+108) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] Concat
 
 --- Original
 +++ New
@@ -1673,7 +1628,7 @@ Escaped mutants:
      }
 
 
-112) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] ConcatOperandRemoval
+109) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1688,7 +1643,7 @@ Escaped mutants:
      }
 
 
-113) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] ConcatOperandRemoval
+110) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1703,7 +1658,7 @@ Escaped mutants:
      }
 
 
-114) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] FunctionCallRemoval
+111) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:72    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -1718,7 +1673,7 @@ Escaped mutants:
      }
 
 
-115) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:86    [M] MethodCallRemoval
+112) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:86    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1733,7 +1688,7 @@ Escaped mutants:
                  $product->setImage($row['image']);
 
 
-116) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:88    [M] MethodCallRemoval
+113) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:88    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1748,7 +1703,7 @@ Escaped mutants:
              }
 
 
-117) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:89    [M] MethodCallRemoval
+114) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:89    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1763,7 +1718,7 @@ Escaped mutants:
              return $products;
 
 
-118) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] Concat
+115) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] Concat
 
 --- Original
 +++ New
@@ -1778,7 +1733,7 @@ Escaped mutants:
      }
 
 
-119) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] ConcatOperandRemoval
+116) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1793,7 +1748,7 @@ Escaped mutants:
      }
 
 
-120) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] ConcatOperandRemoval
+117) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1808,7 +1763,7 @@ Escaped mutants:
      }
 
 
-121) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] FunctionCallRemoval
+118) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:94    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -1823,7 +1778,7 @@ Escaped mutants:
      }
 
 
-122) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] Concat
+119) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] Concat
 
 --- Original
 +++ New
@@ -1838,7 +1793,7 @@ Escaped mutants:
      }
 
 
-123) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] ConcatOperandRemoval
+120) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1853,7 +1808,7 @@ Escaped mutants:
      }
 
 
-124) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] ConcatOperandRemoval
+121) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1868,7 +1823,7 @@ Escaped mutants:
      }
 
 
-125) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] FunctionCallRemoval
+122) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:106    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -1883,7 +1838,7 @@ Escaped mutants:
      }
 
 
-126) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] Concat
+123) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] Concat
 
 --- Original
 +++ New
@@ -1899,7 +1854,7 @@ Escaped mutants:
  }
 
 
-127) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] ConcatOperandRemoval
+124) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1915,7 +1870,7 @@ Escaped mutants:
  }
 
 
-128) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] ConcatOperandRemoval
+125) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -1931,7 +1886,7 @@ Escaped mutants:
  }
 
 
-129) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] FunctionCallRemoval
+126) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\ProductController.php:142    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -1947,7 +1902,7 @@ Escaped mutants:
  }
 
 
-130) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:25    [M] MethodCallRemoval
+127) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:25    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1962,7 +1917,7 @@ Escaped mutants:
              // Verificar si el correo ya existe
 
 
-131) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:26    [M] MethodCallRemoval
+128) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:26    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -1977,7 +1932,7 @@ Escaped mutants:
              $stmt = $this->conn->prepare("SELECT id FROM users WHERE email = ?");
 
 
-132) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:27    [M] Coalesce
+129) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:27    [M] Coalesce
 
 --- Original
 +++ New
@@ -1992,7 +1947,7 @@ Escaped mutants:
              $stmt->execute([$user->getEmail()]);
 
 
-133) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:27    [M] MethodCallRemoval
+130) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:27    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -2007,7 +1962,7 @@ Escaped mutants:
              $stmt->execute([$user->getEmail()]);
 
 
-134) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:31    [M] ArrayItemRemoval
+131) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:31    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -2022,7 +1977,7 @@ Escaped mutants:
              }
 
 
-135) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:31    [M] MethodCallRemoval
+132) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:31    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -2037,7 +1992,7 @@ Escaped mutants:
              }
 
 
-136) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] Concat
+133) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] Concat
 
 --- Original
 +++ New
@@ -2052,7 +2007,7 @@ Escaped mutants:
      }
 
 
-137) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] ConcatOperandRemoval
+134) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -2067,7 +2022,7 @@ Escaped mutants:
      }
 
 
-138) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] ConcatOperandRemoval
+135) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -2082,7 +2037,7 @@ Escaped mutants:
      }
 
 
-139) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] FunctionCallRemoval
+136) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:51    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -2097,7 +2052,7 @@ Escaped mutants:
      }
 
 
-140) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] Concat
+137) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] Concat
 
 --- Original
 +++ New
@@ -2112,7 +2067,7 @@ Escaped mutants:
      }
 
 
-141) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] ConcatOperandRemoval
+138) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -2127,7 +2082,7 @@ Escaped mutants:
      }
 
 
-142) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] ConcatOperandRemoval
+139) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -2142,7 +2097,7 @@ Escaped mutants:
      }
 
 
-143) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] FunctionCallRemoval
+140) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:72    [M] FunctionCallRemoval
 
 --- Original
 +++ New
@@ -2157,7 +2112,7 @@ Escaped mutants:
      }
 
 
-144) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:102    [M] ArrayItemRemoval
+141) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:102    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -2172,7 +2127,7 @@ Escaped mutants:
              error_log("Error al obtener usuario: " . $e->getMessage());
 
 
-145) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:102    [M] MethodCallRemoval
+142) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:102    [M] MethodCallRemoval
 
 --- Original
 +++ New
@@ -2187,7 +2142,7 @@ Escaped mutants:
              error_log("Error al obtener usuario: " . $e->getMessage());
 
 
-146) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] Concat
+143) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] Concat
 
 --- Original
 +++ New
@@ -2202,7 +2157,7 @@ Escaped mutants:
      }
 
 
-147) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] ConcatOperandRemoval
+144) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -2217,22 +2172,7 @@ Escaped mutants:
      }
 
 
-148) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] FunctionCallRemoval
-
---- Original
-+++ New
-@@ @@
-             $stmt->execute([$userId]);
-             return $stmt->fetch(\PDO::FETCH_ASSOC);
-         } catch (\Exception $e) {
--            error_log("Error al obtener usuario: " . $e->getMessage());
-+            
-             return null;
-         }
-     }
-
-
-149) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] ConcatOperandRemoval
+145) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] ConcatOperandRemoval
 
 --- Original
 +++ New
@@ -2247,7 +2187,22 @@ Escaped mutants:
      }
 
 
-150) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Models\Message.php:30    [M] ArrayItemRemoval
+146) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Controllers\UserController.php:105    [M] FunctionCallRemoval
+
+--- Original
++++ New
+@@ @@
+             $stmt->execute([$userId]);
+             return $stmt->fetch(\PDO::FETCH_ASSOC);
+         } catch (\Exception $e) {
+-            error_log("Error al obtener usuario: " . $e->getMessage());
++            
+             return null;
+         }
+     }
+
+
+147) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Models\Message.php:30    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -2262,7 +2217,7 @@ Escaped mutants:
      public function save($conn)
 
 
-151) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Models\Message.php:37    [M] ArrayItemRemoval
+148) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Models\Message.php:37    [M] ArrayItemRemoval
 
 --- Original
 +++ New
@@ -2277,7 +2232,7 @@ Escaped mutants:
      {
 
 
-152) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Models\Order.php:44    [M] This
+149) C:\Users\ASUS\Desktop\proyecto-si784-2024-ii-u3-reportes_chambilla_llantay\src\Models\Order.php:44    [M] This
 
 --- Original
 +++ New

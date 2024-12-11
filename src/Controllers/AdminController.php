@@ -236,6 +236,24 @@ class AdminController {
 
     public function updateProduct($postData, $files) {
         try {
+            // Validar que los datos no estén vacíos
+            if (empty($postData['update_p_id']) || 
+                empty($postData['update_name']) || 
+                empty($postData['update_price'])) {
+                return [
+                    'success' => false, 
+                    'message' => 'Datos del producto inválidos'
+                ];
+            }
+
+            // Validar que el precio sea numérico
+            if (!is_numeric($postData['update_price'])) {
+                return [
+                    'success' => false, 
+                    'message' => 'Precio inválido'
+                ];
+            }
+
             $product = new Product();
             $product->setId($postData['update_p_id']);
             $product->setName($postData['update_name']);
@@ -275,8 +293,11 @@ class AdminController {
             
             return ['success' => false, 'message' => 'Error al actualizar el producto'];
         } catch (\Exception $e) {
-            error_log("Error en updateProduct: " . $e->getMessage());
-            return ['success' => false, 'message' => 'Error al actualizar el producto'];
+            error_log("Error al actualizar producto: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al actualizar el producto'
+            ];
         }
     }
 
