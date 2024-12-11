@@ -48,12 +48,13 @@ jobs:
         XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html public/coverage --coverage-text --stop-on-warning --no-interaction
         
         # Verificar que el reporte se generó
-        if [ -d "public/coverage" ]; then
+        if [ -f "public/coverage/index.html" ]; then
           echo "✓ Reporte de cobertura generado en public/coverage"
           ls -l public/coverage/
         else
           echo "✗ Error: No se pudo generar el reporte de cobertura"
-          exit 1
+          echo "Contenido de public/:"
+          ls -R public/
         fi
 
     - name: Verify Coverage Report
@@ -66,6 +67,7 @@ jobs:
           echo "✗ El reporte de cobertura NO se generó"
           echo "Contenido de public/:"
           ls -R public/
+          exit 1
         fi
 
     - name: Update Behat configuration
