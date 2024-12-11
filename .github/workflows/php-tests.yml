@@ -97,13 +97,13 @@ jobs:
         vendor/bin/infection \
           --threads=4 \
           --coverage=coverage \
-          --source=src \
           --only-covered \
           --skip-initial-tests \
           --ignore-msi-with-no-mutations \
           --no-progress \
           --show-mutations \
-          --html=public/mutations/index.html || true
+          --formatter=html \
+          --output=public/mutations/index.html || true
         
         # Verificar el reporte
         if [ -f "public/mutations/index.html" ]; then
