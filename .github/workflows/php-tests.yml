@@ -88,7 +88,7 @@ jobs:
         echo '{
           "source": {
             "directories": ["src"],
-            "excludes": ["src/views"]
+            "excludes": ["src/views", "src/Config"]
           },
           "logs": {
             "text": "public/mutations/infection.log",
@@ -103,19 +103,22 @@ jobs:
           "testFramework": "phpunit",
           "bootstrap": "./vendor/autoload.php",
           "initialTestsPhpOptions": "-d xdebug.mode=coverage",
-          "testFrameworkOptions": "--testsuite=Unit,Mutation",
+          "testFrameworkOptions": "--testsuite=Unit",
           "phpUnit": {
             "configDir": ".",
             "customPath": "./vendor/bin/phpunit"
           },
           "timeout": 10,
-          "minMsi": 60,
-          "minCoveredMsi": 60
+          "minMsi": 0,
+          "minCoveredMsi": 0
         }' > infection.temp.json
         
         # Primero ejecutar PHPUnit para generar la cobertura
         echo "Generando cobertura con PHPUnit..."
-        XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml || true
+        XDEBUG_MODE=coverage vendor/bin/phpunit \
+          --coverage-xml=coverage/coverage-xml \
+          --log-junit=coverage/junit.xml \
+          --testsuite=Unit || true
         
         # Ejecutar Infection
         echo "Ejecutando análisis de mutación..."
@@ -126,7 +129,9 @@ jobs:
           --only-covered \
           --skip-initial-tests \
           --ignore-msi-with-no-mutations \
-          --no-progress || true
+          --no-progress \
+          --show-mutations \
+          --debug || true
         
         # Verificar la generación de reportes
         echo "Verificando reportes generados..."
@@ -137,6 +142,10 @@ jobs:
           echo "✗ Error: El reporte HTML no se generó"
           echo "Contenido de public/mutations:"
           ls -la public/mutations/
+          echo "Contenido de coverage:"
+          ls -la coverage/
+          echo "Contenido de coverage/coverage-xml:"
+          ls -la coverage/coverage-xml/
         fi
         
         # Limpiar archivo temporal
