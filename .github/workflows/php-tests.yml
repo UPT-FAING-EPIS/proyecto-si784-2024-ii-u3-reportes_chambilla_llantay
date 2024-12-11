@@ -80,7 +80,7 @@ jobs:
       run: |
         echo "Ejecutando Infection tests..."
         mkdir -p public/infection
-        vendor/bin/infection --threads=4 --only-covered --skip-initial-tests --coverage=coverage --html=public/infection/infection.html || true
+        vendor/bin/infection --threads=4 --only-covered --skip-initial-tests --coverage=coverage --logger-html=public/infection/infection.html || true
         
         # Verificar la generación del reporte
         if [ -f "public/infection/infection.html" ]; then
