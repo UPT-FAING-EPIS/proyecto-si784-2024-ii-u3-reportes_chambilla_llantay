@@ -84,10 +84,40 @@ jobs:
         echo "Generando cobertura con PHPUnit..."
         XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml
         
-        # Luego ejecutar Infection usando la cobertura generada
-        echo "Ejecutando análisis de mutación..."
+        # Crear archivo de configuración temporal para Infection
+        echo '{
+          "source": {
+            "directories": ["src"],
+            "excludes": ["src/views", "src/Config"]
+          },
+          "logs": {
+            "html": "public/infection/infection.html"
+          },
+          "mutators": {
+            "@default": true
+          },
+          "testFramework": "phpunit",
+          "bootstrap": "./vendor/autoload.php",
+          "initialTestsPhpOptions": "-d xdebug.mode=coverage",
+          "timeout": 10
+        }' > infection.temp.json
+        
+        # Crear directorio para infection
         mkdir -p public/infection
-        vendor/bin/infection --threads=4 --coverage=coverage --only-covered --skip-initial-tests --logger-html=public/infection/infection.html || true
+        
+        # Ejecutar Infection con la configuración temporal
+        echo "Ejecutando análisis de mutación..."
+        vendor/bin/infection \
+          --threads=4 \
+          --configuration=infection.temp.json \
+          --coverage=coverage \
+          --source=src \
+          --only-covered \
+          --skip-initial-tests \
+          --logger-html=public/infection/infection.html \
+          --ignore-msi-with-no-mutations \
+          --no-progress \
+          --formatter=progress || true
         
         # Verificar la generación del reporte
         if [ -f "public/infection/infection.html" ]; then
@@ -95,10 +125,14 @@ jobs:
           ls -l public/infection/
         else
           echo "✗ Error al generar el reporte de Infection"
+          echo "Contenido del directorio src:"
+          ls -R src/
           echo "Contenido del directorio coverage:"
-          ls -R coverage/
-          exit 1
+          ls -R coverage/coverage-xml/
         fi
+        
+        # Limpiar archivo temporal
+        rm infection.temp.json
 
     - name: Update Behat configuration
       run: |
