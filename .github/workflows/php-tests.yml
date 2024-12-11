@@ -80,27 +80,22 @@ jobs:
       run: |
         echo "Ejecutando Infection tests..."
         
-        # Configurar variables de entorno para las pruebas
-        export DB_HOST=localhost
-        export DB_USER=root
-        export DB_PASS=root
-        export DB_NAME=test_db
-        
         # Crear directorio para mutations
+        echo "Creando directorio para mutations..."
         mkdir -p public/mutations
-        
-        # Primero ejecutar PHPUnit para generar la cobertura
-        echo "Generando cobertura con PHPUnit..."
-        XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml || true
         
         # Crear archivo de configuración temporal para Infection
         echo '{
           "source": {
             "directories": ["src"],
-            "excludes": ["src/views", "src/Config"]
+            "excludes": ["src/views"]
           },
           "logs": {
-            "html": "public/mutations/index.html"
+            "text": "public/mutations/infection.log",
+            "html": "public/mutations/index.html",
+            "summary": "public/mutations/summary.log",
+            "json": "public/mutations/infection.json",
+            "perMutator": "public/mutations/per-mutator.md"
           },
           "mutators": {
             "@default": true
@@ -108,38 +103,65 @@ jobs:
           "testFramework": "phpunit",
           "bootstrap": "./vendor/autoload.php",
           "initialTestsPhpOptions": "-d xdebug.mode=coverage",
+          "testFrameworkOptions": "--testsuite=Unit,Mutation",
+          "phpUnit": {
+            "configDir": ".",
+            "customPath": "./vendor/bin/phpunit"
+          },
           "timeout": 10,
-          "testFrameworkOptions": "--no-configuration"
+          "minMsi": 60,
+          "minCoveredMsi": 60
         }' > infection.temp.json
         
-        # Ejecutar Infection con la configuración temporal
+        # Primero ejecutar PHPUnit para generar la cobertura
+        echo "Generando cobertura con PHPUnit..."
+        XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml || true
+        
+        # Ejecutar Infection
         echo "Ejecutando análisis de mutación..."
         vendor/bin/infection \
           --threads=4 \
           --configuration=infection.temp.json \
           --coverage=coverage \
-          --source=src \
           --only-covered \
           --skip-initial-tests \
           --ignore-msi-with-no-mutations \
-          --no-progress \
-          --formatter=progress \
-          --min-msi=0 \
-          --min-covered-msi=0 || true
+          --no-progress || true
         
-        # Verificar la generación del reporte
-        echo "Verificando reporte generado..."
+        # Verificar la generación de reportes
+        echo "Verificando reportes generados..."
         if [ -f "public/mutations/index.html" ]; then
-          echo "✓ Reporte de mutations generado correctamente"
+          echo "✓ Reporte HTML generado correctamente"
           ls -l public/mutations/
         else
-          echo "✗ Error: El reporte de mutations no se generó"
-          echo "Contenido de public:"
-          ls -la public/
+          echo "✗ Error: El reporte HTML no se generó"
+          echo "Contenido de public/mutations:"
+          ls -la public/mutations/
         fi
         
         # Limpiar archivo temporal
         rm infection.temp.json
+
+    - name: Verify Mutations Report
+      run: |
+        echo "Verificando reportes de mutations..."
+        if [ -d "public/mutations" ]; then
+          echo "Contenido del directorio mutations:"
+          ls -la public/mutations/
+          
+          # Verificar cada tipo de reporte
+          for file in index.html infection.log summary.log infection.json per-mutator.md; do
+            if [ -f "public/mutations/$file" ]; then
+              echo "✓ $file existe"
+            else
+              echo "✗ $file no existe"
+            fi
+          done
+        else
+          echo "✗ El directorio mutations NO existe"
+          echo "Contenido de public/:"
+          ls -R public/
+        fi
 
     - name: Update Behat configuration
       run: |
