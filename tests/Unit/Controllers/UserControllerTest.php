@@ -538,7 +538,9 @@ class UserControllerTest extends TestCase
         $mockStmt = $this->createMock(PDOStatement::class);
         $mockStmt->expects($this->once())
             ->method('execute')
-            ->with($this->equalTo([null]))
+            ->with($this->callback(function($params) {
+                return $params === [null];
+            }))
             ->willReturn(true);
         
         $mockStmt->method('fetch')
@@ -559,7 +561,12 @@ class UserControllerTest extends TestCase
         $mockStmt = $this->createMock(PDOStatement::class);
         $mockStmt->expects($this->once())
             ->method('execute')
-            ->with([null])  
+            ->with($this->callback(function($params) {
+                return $params === [null];
+            }))
+            ->willReturn(true);
+        
+        $mockStmt->method('fetch')
             ->willReturn(false);
         
         $this->mockPDO->method('prepare')
