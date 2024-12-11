@@ -79,14 +79,24 @@ jobs:
     - name: Run Infection tests
       run: |
         echo "Ejecutando Infection tests..."
+        
+        # Primero ejecutar PHPUnit para generar la cobertura
+        echo "Generando cobertura con PHPUnit..."
+        XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-xml=coverage/coverage-xml --log-junit=coverage/junit.xml
+        
+        # Luego ejecutar Infection usando la cobertura generada
+        echo "Ejecutando análisis de mutación..."
         mkdir -p public/infection
-        vendor/bin/infection --threads=4 --only-covered --skip-initial-tests --coverage=coverage --logger-html=public/infection/infection.html || true
+        vendor/bin/infection --threads=4 --coverage=coverage --only-covered --skip-initial-tests --logger-html=public/infection/infection.html || true
         
         # Verificar la generación del reporte
         if [ -f "public/infection/infection.html" ]; then
           echo "✓ Reporte de Infection generado correctamente"
+          ls -l public/infection/
         else
           echo "✗ Error al generar el reporte de Infection"
+          echo "Contenido del directorio coverage:"
+          ls -R coverage/
           exit 1
         fi
 
