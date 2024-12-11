@@ -15,8 +15,19 @@ class UserControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
         $this->mockPDO = $this->createMock(\PDO::class);
         $this->userController = new UserController($this->mockPDO);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
     }
 
     /** @test */
@@ -411,10 +422,12 @@ class UserControllerTest extends TestCase
 
     public function test_login_con_error_db()
     {
-        $stmt = $this->createMock(\PDOStatement::class);
-        $stmt->method('execute')->willThrowException(new \PDOException('Error de conexión'));
+        $mockStmt = $this->createMock(PDOStatement::class);
+        $mockStmt->method('execute')
+            ->willThrowException(new \PDOException('Error de conexión'));
         
-        $this->mockPDO->method('prepare')->willReturn($stmt);
+        $this->mockPDO->method('prepare')
+            ->willReturn($mockStmt);
 
         $resultado = $this->userController->loginUser('test@test.com', '123456');
 
@@ -525,11 +538,11 @@ class UserControllerTest extends TestCase
         $mockStmt = $this->createMock(PDOStatement::class);
         $mockStmt->expects($this->once())
             ->method('execute')
-            ->with([null])
-            ->willReturn(true);  // Cambiado a true porque el execute funciona
+            ->with($this->equalTo([null]))
+            ->willReturn(true);
         
         $mockStmt->method('fetch')
-            ->willReturn(false); // El fetch retorna false porque no hay usuario
+            ->willReturn(false);
         
         $this->mockPDO->method('prepare')
             ->willReturn($mockStmt);
