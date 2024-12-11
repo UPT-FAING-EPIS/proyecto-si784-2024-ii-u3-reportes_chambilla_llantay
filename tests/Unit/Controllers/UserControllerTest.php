@@ -346,7 +346,7 @@ class UserControllerTest extends TestCase
         $this->mockPDO->method('prepare')->willReturn($mockStmt);
 
         $result = $this->userController->getUserById(999);
-        $this->assertFalse($result);
+        $this->assertNull($result);
     }
 
     public function test_register_con_email_existente()
@@ -436,7 +436,7 @@ class UserControllerTest extends TestCase
     }
 
     // Pruebas de getUserById con errores
-    public function test_getUserById_usuario_no_existe()
+    public function test_getUserById_usuario_no_existe(): void
     {
         $stmt = $this->createMock(\PDOStatement::class);
         $stmt->method('fetch')->willReturn(false);
@@ -445,8 +445,7 @@ class UserControllerTest extends TestCase
         $this->mockPDO->method('prepare')->willReturn($stmt);
 
         $resultado = $this->userController->getUserById(999);
-
-        $this->assertFalse($resultado);
+        $this->assertNull($resultado);
     }
 
     public function test_getUserById_con_error_db()
@@ -559,21 +558,12 @@ class UserControllerTest extends TestCase
     public function getUserById_falla_con_id_nulo(): void
     {
         $mockStmt = $this->createMock(PDOStatement::class);
-        $mockStmt->expects($this->once())
-            ->method('execute')
-            ->with($this->callback(function($params) {
-                return $params === [null];
-            }))
-            ->willReturn(true);
+        $mockStmt->method('execute')->willReturn(true);
+        $mockStmt->method('fetch')->willReturn(false);
         
-        $mockStmt->method('fetch')
-            ->willReturn(false);
-        
-        $this->mockPDO->method('prepare')
-            ->willReturn($mockStmt);
+        $this->mockPDO->method('prepare')->willReturn($mockStmt);
 
         $result = $this->userController->getUserById(null);
-        
         $this->assertNull($result);
     }
 

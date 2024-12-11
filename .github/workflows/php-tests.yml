@@ -45,9 +45,13 @@ jobs:
       run: |
         echo "Creando directorio para coverage..."
         mkdir -p public/coverage
+        chmod -R 777 public/coverage
+        
+        echo "Verificando Xdebug..."
+        php -v | grep -i xdebug
         
         echo "Ejecutando PHPUnit con coverage..."
-        XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html public/coverage
+        XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html public/coverage --coverage-clover coverage.xml
         
         echo "Verificando archivos generados..."
         ls -la public/coverage/
