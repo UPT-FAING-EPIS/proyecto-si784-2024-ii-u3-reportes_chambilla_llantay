@@ -611,4 +611,136 @@ class AdminControllerTest extends TestCase
 
         $this->assertFalse($result);
     }
+
+    /** @test */
+    public function testGetSecureImagePathWithEmptyAndNonStringName(): void
+    {
+        $this->pdoStatement->method('execute')->willReturn(true);
+        $this->conn->method('prepare')->willReturn($this->pdoStatement);
+
+        $reflection = new \ReflectionClass($this->adminController);
+        $method = $reflection->getMethod('getSecureImagePath');
+        $method->setAccessible(true);
+
+        // Caso 1: nombre vacío pero es string
+        $result1 = $method->invoke($this->adminController, '');
+        $this->assertFalse($result1, 'Debería fallar con string vacío');
+
+        // Caso 2: no es string (número)
+        $result2 = $method->invoke($this->adminController, 123);
+        $this->assertFalse($result2, 'Debería fallar con número');
+
+        // Caso 3: null
+        $result3 = $method->invoke($this->adminController, null);
+        $this->assertFalse($result3, 'Debería fallar con null');
+
+        // Caso 4: array vacío
+        $result4 = $method->invoke($this->adminController, []);
+        $this->assertFalse($result4, 'Debería fallar con array');
+    }
+
+    /** @test */
+    public function testGetSecureImagePathExtensionCaseSensitive(): void
+    {
+        $this->pdoStatement->method('execute')->willReturn(true);
+        $this->pdoStatement->method('fetch')->willReturn(['image' => 'test.jpg']);
+        $this->conn->method('prepare')->willReturn($this->pdoStatement);
+
+        $reflection = new \ReflectionClass($this->adminController);
+        $method = $reflection->getMethod('getSecureImagePath');
+        $method->setAccessible(true);
+
+        // Caso 1: extensión en mayúsculas - debería devolver una ruta válida
+        $result1 = $method->invoke($this->adminController, 'test.JPG');
+        $this->assertIsString($result1, 'Debería aceptar extensión en mayúsculas');
+        $this->assertStringContainsString('test.JPG', $result1);
+
+        // Caso 2: extensión mixta - debería devolver una ruta válida
+        $result2 = $method->invoke($this->adminController, 'test.JpG');
+        $this->assertIsString($result2, 'Debería aceptar extensión mixta');
+        $this->assertStringContainsString('test.JpG', $result2);
+
+        // Caso 3: extensión en minúsculas - debería devolver una ruta válida
+        $result3 = $method->invoke($this->adminController, 'test.jpg');
+        $this->assertIsString($result3, 'Debería aceptar extensión en minúsculas');
+        $this->assertStringContainsString('test.jpg', $result3);
+    }
+
+    /** @test */
+    public function testDeleteProductWithEmptyExecuteParams(): void
+    {
+        // Configurar el mock para el PDOStatement
+        $this->pdoStatement->method('fetch')
+            ->willReturn(['image' => 'test.jpg']);
+        
+        $this->pdoStatement->method('execute')
+            ->willReturn(false);
+                           
+        $this->conn->method('prepare')
+            ->willReturn($this->pdoStatement);
+
+        $result = $this->adminController->deleteProduct(1);
+
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Error al eliminar el producto', $result['message']);
+    }
+
+    /** @test */
+    public function obtener_total_pendientes_exitoso(): void
+    {
+        // Datos de prueba
+        $ordersData = [
+            [
+                'id' => 1,
+                'total_price' => 100,
+                'payment_status' => 'pendiente'
+            ],
+            [
+                'id' => 2,
+                'total_price' => 200,
+                'payment_status' => 'pendiente'
+            ]
+        ];
+
+        // Configurar el mock de PDO y PDOStatement
+        $this->conn->expects($this->once())
+            ->method('prepare')
+            ->with("SELECT * FROM `orders` WHERE payment_status = 'pendiente'")
+            ->willReturn($this->pdoStatement);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('execute')
+            ->willReturn(true);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('fetchAll')
+            ->with(\PDO::FETCH_ASSOC)
+            ->willReturn($ordersData);
+
+        // Ejecutar el método y verificar resultado
+        $result = $this->adminController->getTotalPendings();
+        
+        $this->assertEquals(300, $result); // 100 + 200 = 300
+    }
+
+    /** @test */
+    public function obtener_total_pendientes_maneja_error_execute(): void
+    {
+        // Configurar el mock para simular un error en execute()
+        $this->conn->expects($this->once())
+            ->method('prepare')
+            ->with("SELECT * FROM `orders` WHERE payment_status = 'pendiente'")
+            ->willReturn($this->pdoStatement);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('execute')
+            ->willThrowException(new \PDOException('Error de base de datos'));
+
+        // Verificar que se lanza la excepción
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Error al procesar la solicitud');
+
+        $this->adminController->getTotalPendings();
+    }
+
 }

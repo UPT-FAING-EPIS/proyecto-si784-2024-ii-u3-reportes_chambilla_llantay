@@ -100,6 +100,16 @@ class OrderController {
                 return ['success' => false, 'message' => 'El carrito está vacío'];
             }
 
+            // Validar productos antes de procesar
+            foreach($cartItems as $item) {
+                if(empty($item['name'])) {
+                    return ['success' => false, 'message' => 'Error: nombre de producto inválido'];
+                }
+                if($item['price'] < 0) {
+                    return ['success' => false, 'message' => 'Error: precio inválido'];
+                }
+            }
+
             // Calcular total y preparar lista de productos
             $cartTotal = 0;
             $products = [];

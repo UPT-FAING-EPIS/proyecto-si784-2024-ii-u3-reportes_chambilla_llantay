@@ -33,17 +33,21 @@ class AdminController {
         return $data;
     }
 
-    private function getTotalPendings() {
-        $stmt = $this->conn->prepare("SELECT * FROM `orders` WHERE payment_status = 'pendiente'");
-        $stmt->execute();
-        $total = 0;
-        foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-            $order = new Order();
-            $order->setId($row['id']);
-            $order->setTotalPrice($row['total_price']);
-            $total += $order->getTotalPrice();
+    public function getTotalPendings() {
+        try {
+            $stmt = $this->conn->prepare("SELECT * FROM `orders` WHERE payment_status = 'pendiente'");
+            $stmt->execute();
+            $total = 0;
+            foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $order = new Order();
+                $order->setId($row['id']);
+                $order->setTotalPrice($row['total_price']);
+                $total += $order->getTotalPrice();
+            }
+            return $total;
+        } catch (\Exception $e) {
+            $this->handleDatabaseError($e);
         }
-        return $total;
     }
 
     private function getTotalCompleted() {

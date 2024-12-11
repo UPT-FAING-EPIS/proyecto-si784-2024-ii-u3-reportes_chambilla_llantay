@@ -105,6 +105,31 @@ class OrderControllerTest extends TestCase
     }
 
     /** @test */
+    public function obtener_pedidos_usuario_cuando_estan_vacios(): void
+    {
+        $userId = 1;
+        
+        // Configurar el mock para devolver un array vacío
+        $this->conn->expects($this->once())
+            ->method('prepare')
+            ->willReturn($this->pdoStatement);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('execute')
+            ->with([$userId]);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('fetchAll')
+            ->willReturn([]);
+
+        $result = $this->orderController->getUserOrders($userId);
+
+        // Verificaciones
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /** @test */
     public function actualizar_estado_pago(): void
     {
         $orderId = 1;
@@ -474,4 +499,125 @@ class OrderControllerTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertEquals('El carrito está vacío', $result['message']);
     }
+
+    /** @test */
+    public function obtener_todos_pedidos_con_datos_nulos(): void
+    {
+        // Simular una fila con datos nulos
+        $expectedOrders = [
+            [
+                'user_id' => null,
+                'name' => null,
+                'email' => null,
+                'method' => null,
+                'address' => null,
+                'total_products' => null,
+                'total_price' => null
+            ]
+        ];
+
+        $this->conn->expects($this->once())
+            ->method('prepare')
+            ->willReturn($this->pdoStatement);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('execute');
+
+        $this->pdoStatement->expects($this->once())
+            ->method('fetchAll')
+            ->willReturn($expectedOrders);
+
+        $result = $this->orderController->getAllOrders();
+
+        // Verificaciones
+        $this->assertNotEmpty($result);
+        $this->assertIsArray($result);
+        $this->assertCount(1, $result);
+        
+        // Verificar que los getters devuelvan null o valores por defecto
+        $this->assertNull($result[0]->getUserId());
+        $this->assertNull($result[0]->getName());
+        $this->assertNull($result[0]->getEmail());
+        $this->assertNull($result[0]->getMethod());
+        $this->assertNull($result[0]->getAddress());
+        $this->assertNull($result[0]->getTotalProducts());
+        $this->assertNull($result[0]->getTotalPrice());
+    }
+
+    /** @test */
+    public function crear_pedido_con_total_negativo(): void
+    {
+        $userId = 1;
+        $userData = [
+            'name' => 'Juan Pérez',
+            'number' => '123456789',
+            'email' => 'juan@test.com',
+            'method' => 'credit card',
+            'flat' => '123',
+            'street' => 'Calle Principal',
+            'city' => 'Lima',
+            'country' => 'Perú',
+            'pin_code' => '12345'
+        ];
+
+        $cartItems = [
+            [
+                'name' => 'Producto 1',
+                'quantity' => 2,
+                'price' => -50  // Precio negativo
+            ]
+        ];
+
+        $this->conn->expects($this->once())
+            ->method('prepare')
+            ->willReturn($this->pdoStatement);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('fetchAll')
+            ->willReturn($cartItems);
+
+        $result = $this->orderController->createOrder($userData, $userId);
+
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Error: precio inválido', $result['message']);
+    }
+
+    /** @test */
+    public function crear_pedido_con_nombre_producto_vacio(): void
+    {
+        $userId = 1;
+        $userData = [
+            'name' => 'Juan Pérez',
+            'number' => '123456789',
+            'email' => 'juan@test.com',
+            'method' => 'credit card',
+            'flat' => '123',
+            'street' => 'Calle Principal',
+            'city' => 'Lima',
+            'country' => 'Perú',
+            'pin_code' => '12345'
+        ];
+
+        $cartItems = [
+            [
+                'name' => '',  // Nombre vacío
+                'quantity' => 2,
+                'price' => 100
+            ]
+        ];
+
+        $this->conn->expects($this->once())
+            ->method('prepare')
+            ->willReturn($this->pdoStatement);
+
+        $this->pdoStatement->expects($this->once())
+            ->method('fetchAll')
+            ->willReturn($cartItems);
+
+        $result = $this->orderController->createOrder($userData, $userId);
+
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Error: nombre de producto inválido', $result['message']);
+    }
+
 } 
