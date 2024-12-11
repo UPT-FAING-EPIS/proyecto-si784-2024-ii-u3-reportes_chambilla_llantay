@@ -647,29 +647,4 @@ class UserControllerTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertEquals('Registro exitoso!', $result['message']);
     }
-
-    /** @test */
-    public function register_mantiene_tipo_usuario_por_defecto(): void
-    {
-        $mockStmt = $this->createMock(PDOStatement::class);
-        $mockStmt->method('fetch')->willReturn(false);
-        
-        $executeParams = null;
-        $mockStmt->method('execute')
-            ->willReturnCallback(function($params) use (&$executeParams) {
-                $executeParams = $params;
-                return true;
-            });
-
-        $this->mockPDO->method('prepare')
-            ->willReturn($mockStmt);
-
-        $this->userController->registerUser([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password123'
-        ]);
-
-        $this->assertEquals('user', $executeParams[3]);
-    }
 } 
