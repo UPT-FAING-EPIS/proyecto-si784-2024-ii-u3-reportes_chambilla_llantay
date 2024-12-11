@@ -18,13 +18,24 @@ class UserControllerTest extends TestCase
         if (session_status() === PHP_SESSION_NONE) {
             @session_start();
         }
-        $this->mockPDO = $this->createMock(\PDO::class);
+        
+        // Configurar el mock de PDO para que no intente conexiones reales
+        $this->mockPDO = $this->createMock(PDO::class);
+        $this->mockPDO->method('prepare')
+            ->willReturnCallback(function() {
+                $stmt = $this->createMock(PDOStatement::class);
+                $stmt->method('execute')->willReturn(true);
+                $stmt->method('fetch')->willReturn(false);
+                return $stmt;
+            });
+            
         $this->userController = new UserController($this->mockPDO);
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
+        $_SESSION = array(); // Limpiar la sesión entre pruebas
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
         }
