@@ -400,8 +400,18 @@ jobs:
         echo "🔍 ANÁLISIS DE SEGURIDAD SEMGREP"
         echo "=============================="
         
-        # Ejecutar scan y guardar resultados
-        semgrep scan --json > semgrep_results.json
+        # Ejecutar scan con todos los detalles
+        semgrep scan \
+          --verbose \
+          --no-git-ignore \
+          --max-target-bytes=5000000 \
+          --no-rewrite-rule-ids \
+          --metrics=off \
+          --json | tee semgrep_results.json
+        
+        # Mostrar resumen de resultados
+        echo "📊 Resumen de Resultados:"
+        cat semgrep_results.json | jq '.'
 
     - name: Update Semgrep HTML Report
       run: |
