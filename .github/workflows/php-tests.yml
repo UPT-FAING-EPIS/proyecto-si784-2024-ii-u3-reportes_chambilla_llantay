@@ -397,16 +397,26 @@ jobs:
 
     - name: Semgrep Scan
       run: |
-        echo "🔍 INICIANDO ANÁLISIS SEMGREP"
-        echo "==========================="
+        echo "🔍 ANÁLISIS DE SEGURIDAD SEMGREP"
+        echo "=============================="
         
-        # Ejecutar scan y mostrar resultados directamente
+        # Ejecutar scan con formato limpio
         semgrep scan \
           --config "p/php" \
           --config "p/security-audit" \
-          --verbose \
           --no-git-ignore \
-          --max-target-bytes=5000000
+          --max-target-bytes=5000000 \
+          --quiet \
+          --disable-version-check \
+          --no-rewrite-rule-ids \
+          --metrics=off \
+          --max-log-list-entries=0 \
+          --exclude "vendor/*" \
+          --exclude "coverage/*" \
+          --exclude "public/coverage/*" \
+          --exclude "tests/*" \
+          --exclude "*.min.js" \
+          --exclude "*.json"
 
     - name: Create Semgrep HTML Report
       run: |
