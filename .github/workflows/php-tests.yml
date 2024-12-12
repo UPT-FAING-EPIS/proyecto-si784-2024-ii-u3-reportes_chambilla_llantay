@@ -409,6 +409,9 @@ jobs:
           --max-target-bytes=5000000 \
           --no-rewrite-rule-ids \
           --include "src/Controllers/*.php" \
+          --quiet \
+          --disable-version-check \
+          --no-show-parsed \
           --json | tee semgrep_results.json
 
         echo -e "\n📊 ANÁLISIS DETALLADO POR CONTROLADOR"
