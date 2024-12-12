@@ -399,50 +399,40 @@ jobs:
         # Ejecutar scan y generar SARIF
         semgrep scan --sarif --output=semgrep.sarif --config=auto --verbose > scan_output_verbose.txt 2>&1
 
-    - name: Process Semgrep Results
+    - name: Process and Show Semgrep Results
       run: |
         # Función para limpiar números
         clean_number() {
           echo "$1" | tr -dc '0-9' || echo '0'
         }
         
-        # Extraer y limpiar datos
-        RULES=$(clean_number "$(grep "loaded rules:" scan_output_verbose.txt || echo '0')")
-        FILES=$(clean_number "$(grep "files in scope:" scan_output_verbose.txt || echo '0')")
-        FINDINGS=$(clean_number "$(grep "findings:" scan_output_verbose.txt || echo '0')")
+        echo "=== MOSTRANDO DATOS OBTENIDOS ==="
         
-        # Extraer datos por lenguaje
-        PHP=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php' || echo '0')")
-        HTML=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html' || echo '0')")
-        JS=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript' || echo '0')")
-        YAML=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml' || echo '0')")
-        JSON=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json' || echo '0')")
-        DOCKER=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile' || echo '0')")
+        echo "--- Contenido del archivo scan_output_verbose.txt ---"
+        cat scan_output_verbose.txt
         
-        # Extraer datos de severidad
-        HIGH=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error' || echo '0')")
-        MED=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning' || echo '0')")
-        LOW=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info' || echo '0')")
+        echo "\n--- Datos Extraídos ---"
+        echo "Reglas cargadas: $(grep "loaded rules:" scan_output_verbose.txt)"
+        echo "Archivos en scope: $(grep "files in scope:" scan_output_verbose.txt)"
+        echo "Hallazgos totales: $(grep "findings:" scan_output_verbose.txt)"
         
-        # Extraer reglas ejecutadas
-        RUN=$(clean_number "$(grep 'Rules run:' scan_output_verbose.txt || echo '0')")
+        echo "\n--- Datos por Lenguaje ---"
+        echo "PHP: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php')"
+        echo "HTML: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html')"
+        echo "JavaScript: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript')"
+        echo "YAML: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml')"
+        echo "JSON: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json')"
+        echo "Dockerfile: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile')"
         
-        # Exportar variables limpias
-        {
-          echo "TOTAL_RULES=$RULES"
-          echo "TOTAL_FILES=$FILES"
-          echo "TOTAL_FINDINGS=$FINDINGS"
-          echo "PHP_FILES=$PHP"
-          echo "HTML_FILES=$HTML"
-          echo "JS_FILES=$JS"
-          echo "YAML_FILES=$YAML"
-          echo "JSON_FILES=$JSON"
-          echo "DOCKERFILE_FILES=$DOCKER"
-          echo "HIGH_SEVERITY=$HIGH"
-          echo "MED_SEVERITY=$MED"
-          echo "LOW_SEVERITY=$LOW"
-          echo "RULES_RUN=$RUN"
-        } >> $GITHUB_ENV
+        echo "\n--- Datos de Severidad ---"
+        echo "Alta: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error')"
+        echo "Media: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning')"
+        echo "Baja: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info')"
+        
+        echo "\n--- Reglas Ejecutadas ---"
+        echo "$(grep 'Rules run:' scan_output_verbose.txt)"
+        
+        echo "\n=== FIN DE LOS DATOS ==="
 
     - name: Create Semgrep HTML Report
       run: |
