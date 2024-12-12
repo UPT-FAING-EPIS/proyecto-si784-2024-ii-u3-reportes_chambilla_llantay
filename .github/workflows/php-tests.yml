@@ -161,6 +161,12 @@ jobs:
           echo "Contenido del directorio mutations:"
           ls -la public/mutations/
           
+          # Renombrar infection.html a index.html
+          if [ -f "public/mutations/infection.html" ]; then
+            mv public/mutations/infection.html public/mutations/index.html
+            echo "✓ Archivo infection.html renombrado a index.html"
+          fi
+          
           # Verificar cada tipo de reporte
           for file in index.html infection.log summary.log infection.json per-mutator.md; do
             if [ -f "public/mutations/$file" ]; then
