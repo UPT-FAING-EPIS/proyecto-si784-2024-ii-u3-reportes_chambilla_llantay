@@ -394,95 +394,45 @@ jobs:
       run: |
         python -m pip install semgrep
 
-    - name: Semgrep Scan Controllers
+    - name: Semgrep Scan
       run: |
-        # Escanear específicamente los Controllers
-        echo "=== Iniciando Análisis de Controllers ==="
-        
-        # Crear directorio para resultados
-        mkdir -p scan_results
+        # Ejecutar scan y generar SARIF
+        semgrep scan --sarif --output=semgrep.sarif --config=auto --verbose > scan_output_verbose.txt 2>&1
 
-        # Escaneo general de seguridad
-        semgrep scan \
-          --config "p/security-audit" \
-          --config "p/owasp-top-ten" \
-          --config "p/php" \
-          --include "src/Controllers/*.php" \
-          --json > scan_results/general_scan.json
-
-        # Análisis por controller
-        for controller in ContactController ProductController SearchController UserController; do
-          echo "Analizando $controller..."
-          semgrep scan "src/Controllers/${controller}.php" \
-            --config "p/php" \
-            --config "p/security-audit" \
-            --json > "scan_results/${controller}_analysis.json"
-        done
-
-        # Procesar resultados
-        {
-          # Contar hallazgos por controller
-          echo "TOTAL_FINDINGS=$(jq '.results | length' scan_results/general_scan.json)"
-          
-          for controller in ContactController ProductController SearchController UserController; do
-            findings=$(jq '.results | length' "scan_results/${controller}_analysis.json")
-            echo "${controller}_FINDINGS=$findings"
-            
-            # Extraer detalles
-            echo "${controller}_DETAILS<<EOF"
-            jq -r '.results[] | "- " + .extra.message + " (línea: " + (.start.line | tostring) + ")"' "scan_results/${controller}_analysis.json" || echo "Sin hallazgos"
-            echo "EOF"
-          done
-
-          # Extraer patrones de seguridad
-          echo "SECURITY_PATTERNS<<EOF"
-          {
-            echo "=== Patrones de Seguridad ==="
-            echo "Password Hashing: $(grep -c 'password_hash' src/Controllers/*.php)"
-            echo "Prepared Statements: $(grep -c 'prepare(' src/Controllers/*.php)"
-            echo "Error Logging: $(grep -c 'error_log' src/Controllers/*.php)"
-            echo "Input Validation: $(grep -c 'isset(' src/Controllers/*.php)"
-            echo "Session Management: $(grep -c 'session' src/Controllers/*.php)"
-          } | tee security_patterns.txt
-          echo "EOF"
-
-          # Métricas de código
-          echo "CODE_METRICS<<EOF"
-          {
-            echo "=== Métricas de Código ==="
-            total_controllers=$(ls src/Controllers/*.php | wc -l)
-            total_methods=$(grep -c 'function' src/Controllers/*.php)
-            total_lines=$(wc -l src/Controllers/*.php | tail -n1 | awk '{print $1}')
-            echo "Total Controllers: $total_controllers"
-            echo "Total Métodos: $total_methods"
-            echo "Líneas de Código: $total_lines"
-          } | tee code_metrics.txt
-          echo "EOF"
-
-          # Variables para el resumen
-          echo "TOTAL_CONTROLLERS=$total_controllers"
-          echo "TOTAL_METHODS=$total_methods"
-          echo "TOTAL_LINES=$total_lines"
-        } >> $GITHUB_ENV
-
-    - name: Show Analysis Summary
+    - name: Process and Show Semgrep Results
       run: |
-        echo "=== Resumen del Análisis ==="
-        echo "Total Controllers: $TOTAL_CONTROLLERS"
-        echo "Total Hallazgos: $TOTAL_FINDINGS"
-        echo "Total Líneas: $TOTAL_LINES"
+        # Función para limpiar números
+        clean_number() {
+          echo "$1" | tr -dc '0-9' || echo '0'
+        }
         
-        echo "\n=== Hallazgos por Controller ==="
-        echo "ContactController: $ContactController_FINDINGS"
-        echo "ProductController: $ProductController_FINDINGS"
-        echo "SearchController: $SearchController_FINDINGS"
-        echo "UserController: $UserController_FINDINGS"
+        echo "=== MOSTRANDO DATOS OBTENIDOS ==="
         
-        echo "\n=== Patrones de Seguridad ==="
-        echo "$SECURITY_PATTERNS"
+        echo "--- Contenido del archivo scan_output_verbose.txt ---"
+        cat scan_output_verbose.txt
         
-        echo "\n=== Métricas de Código ==="
-        echo "$CODE_METRICS"
+        echo "\n--- Datos Extraídos ---"
+        echo "Reglas cargadas: $(grep "loaded rules:" scan_output_verbose.txt)"
+        echo "Archivos en scope: $(grep "files in scope:" scan_output_verbose.txt)"
+        echo "Hallazgos totales: $(grep "findings:" scan_output_verbose.txt)"
+        
+        echo "\n--- Datos por Lenguaje ---"
+        echo "PHP: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php')"
+        echo "HTML: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html')"
+        echo "JavaScript: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript')"
+        echo "YAML: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml')"
+        echo "JSON: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json')"
+        echo "Dockerfile: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile')"
+        
+        echo "\n--- Datos de Severidad ---"
+        echo "Alta: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error')"
+        echo "Media: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning')"
+        echo "Baja: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info')"
+        
+        echo "\n--- Reglas Ejecutadas ---"
+        echo "$(grep 'Rules run:' scan_output_verbose.txt)"
+        
+        echo "\n=== FIN DE LOS DATOS ==="
 
     - name: Create Semgrep HTML Report
       run: |
@@ -491,7 +441,7 @@ jobs:
         <html>
         <head>
             <meta charset=\"UTF-8\">
-            <title>Análisis de Seguridad - Controllers</title>
+            <title>Análisis Semgrep</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -527,36 +477,20 @@ jobs:
                 .metric-value {
                     font-size: 2em;
                     font-weight: bold;
+                    color: #333;
                 }
                 .metric-detail {
                     font-size: 0.9em;
                     color: #666;
                     margin-top: 5px;
                 }
-                .controller-section {
-                    margin: 20px 0;
-                    padding: 20px;
-                    background: #fff;
-                    border-radius: 8px;
-                    border: 1px solid #eee;
-                }
-                .findings-list {
-                    list-style: none;
-                    padding: 0;
-                }
-                .finding-item {
-                    margin: 10px 0;
-                    padding: 15px;
-                    background: #f8f9fa;
-                    border-radius: 6px;
-                }
-                .security-pattern {
-                    display: inline-block;
-                    padding: 4px 8px;
-                    margin: 2px;
-                    border-radius: 4px;
-                    background: #e9ecef;
-                    font-size: 0.9em;
+                .good { color: #28a745; }
+                .warning { color: #ffc107; }
+                .danger { color: #dc3545; }
+                .info { color: #17a2b8; }
+                h1, h2 {
+                    text-align: center;
+                    color: #333;
                 }
                 .section-title {
                     margin-top: 30px;
@@ -564,99 +498,235 @@ jobs:
                     border-bottom: 2px solid #eee;
                     padding-bottom: 10px;
                 }
-                .good { color: #28a745; }
-                .warning { color: #ffc107; }
-                .danger { color: #dc3545; }
-                .info { color: #17a2b8; }
+                .findings-section {
+                    margin: 20px 0;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    border: 1px solid #eee;
+                }
+                .findings-detail {
+                    font-family: monospace;
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                    font-size: 0.9em;
+                    line-height: 1.5;
+                    margin: 0;
+                    padding: 10px;
+                    background: #fff;
+                    border-radius: 4px;
+                    border: 1px solid #eee;
+                    max-height: 500px;
+                    overflow-y: auto;
+                }
+                .metric-files {
+                    font-size: 0.8em;
+                    color: #666;
+                    margin-top: 10px;
+                    text-align: left;
+                    padding: 10px;
+                    background: #f8f9fa;
+                    border-radius: 4px;
+                    max-height: 150px;
+                    overflow-y: auto;
+                    white-space: pre-wrap;
+                    word-break: break-all;
+                    border: 1px solid #eee;
+                }
+                .file-list {
+                    margin: 0;
+                    padding: 0;
+                    list-style: none;
+                }
+                .file-list li {
+                    padding: 3px 0;
+                    border-bottom: 1px dashed #eee;
+                }
+                .file-list li:last-child {
+                    border-bottom: none;
+                }
+                
+                /* Nuevos estilos para los hallazgos */
+                .findings-container {
+                    margin-top: 30px;
+                    padding: 20px;
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                
+                .finding-item {
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    border: 1px solid #eee;
+                    border-radius: 6px;
+                    background: #f8f9fa;
+                }
+                
+                .finding-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 10px;
+                }
+                
+                .finding-severity {
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-weight: bold;
+                }
+                
+                .finding-severity.high {
+                    background: #dc3545;
+                    color: white;
+                }
+                
+                .finding-severity.medium {
+                    background: #ffc107;
+                }
+                
+                .finding-severity.low {
+                    background: #28a745;
+                    color: white;
+                }
+                
+                .finding-details {
+                    font-family: monospace;
+                    background: white;
+                    padding: 10px;
+                    border-radius: 4px;
+                    overflow-x: auto;
+                }
+                
+                .finding-file {
+                    color: #666;
+                    font-size: 0.9em;
+                    margin-bottom: 5px;
+                }
+                
+                .finding-message {
+                    margin: 10px 0;
+                    font-weight: bold;
+                }
+                
+                .code-preview {
+                    background: #f8f9fa;
+                    padding: 10px;
+                    border-radius: 4px;
+                    margin-top: 10px;
+                    font-family: monospace;
+                    white-space: pre-wrap;
+                }
             </style>
         </head>
         <body>
             <div class=\"container\">
-                <h1>Análisis de Seguridad - Controllers</h1>
-
+                <h1>Análisis de Seguridad con Semgrep</h1>
+                
                 <h2 class=\"section-title\">Resumen General</h2>
                 <div class=\"metric-grid\">
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Total Controllers</div>
-                        <div class=\"metric-value info\">$TOTAL_CONTROLLERS</div>
+                        <div class=\"metric-title\">Total de Reglas</div>
+                        <div class=\"metric-value info\">$TOTAL_RULES</div>
+                        <div class=\"metric-detail\">Reglas disponibles</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">Reglas Ejecutadas</div>
+                        <div class=\"metric-value info\">$RULES_RUN</div>
+                        <div class=\"metric-detail\">De $TOTAL_RULES reglas totales</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">Total de Archivos</div>
+                        <div class=\"metric-value info\">$TOTAL_FILES</div>
                         <div class=\"metric-detail\">Archivos analizados</div>
                     </div>
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Total Hallazgos</div>
+                        <div class=\"metric-title\">Total de Hallazgos</div>
                         <div class=\"metric-value warning\">$TOTAL_FINDINGS</div>
-                        <div class=\"metric-detail\">Issues encontrados</div>
+                        <div class=\"metric-detail\">Problemas detectados</div>
+                    </div>
+                </div>
+
+                <h2 class=\"section-title\">Severidades</h2>
+                <div class=\"metric-grid\">
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">Alta Severidad</div>
+                        <div class=\"metric-value danger\">$HIGH_SEVERITY</div>
+                        <div class=\"metric-detail\">Requieren atención inmediata</div>
                     </div>
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Líneas de Código</div>
-                        <div class=\"metric-value info\">$TOTAL_LINES</div>
-                        <div class=\"metric-detail\">En Controllers</div>
+                        <div class=\"metric-title\">Media Severidad</div>
+                        <div class=\"metric-value warning\">$MEDIUM_SEVERITY</div>
+                        <div class=\"metric-detail\">Problemas importantes</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">Baja Severidad</div>
+                        <div class=\"metric-value good\">$LOW_SEVERITY</div>
+                        <div class=\"metric-detail\">Sugerencias de mejora</div>
                     </div>
                 </div>
 
-                <h2 class=\"section-title\">Análisis por Controller</h2>
-                
-                <div class=\"controller-section\">
-                    <h3>ContactController ($CONTACT_FINDINGS hallazgos)</h3>
-                    <div class=\"findings-list\">
-                        $CONTACT_DETAILS
+                <h2 class=\"section-title\">Archivos por Lenguaje</h2>
+                <div class=\"metric-grid\">
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">PHP</div>
+                        <div class=\"metric-value info\">$PHP_FILES</div>
+                        <div class=\"metric-detail\">Archivos analizados</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">HTML</div>
+                        <div class=\"metric-value info\">$HTML_FILES</div>
+                        <div class=\"metric-detail\">Archivos analizados</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">JavaScript</div>
+                        <div class=\"metric-value info\">$JS_FILES</div>
+                        <div class=\"metric-detail\">Archivos analizados</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">YAML</div>
+                        <div class=\"metric-value info\">$YAML_FILES</div>
+                        <div class=\"metric-detail\">Archivos analizados</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">JSON</div>
+                        <div class=\"metric-value info\">$JSON_FILES</div>
+                        <div class=\"metric-detail\">Archivos analizados</div>
+                    </div>
+                    <div class=\"metric-card\">
+                        <div class=\"metric-title\">Dockerfile</div>
+                        <div class=\"metric-value info\">$DOCKERFILE_FILES</div>
+                        <div class=\"metric-detail\">Archivos analizados</div>
                     </div>
                 </div>
 
-                <div class=\"controller-section\">
-                    <h3>ProductController ($PRODUCT_FINDINGS hallazgos)</h3>
-                    <div class=\"findings-list\">
-                        $PRODUCT_DETAILS
-                    </div>
-                </div>
-
-                <div class=\"controller-section\">
-                    <h3>SearchController ($SEARCH_FINDINGS hallazgos)</h3>
-                    <div class=\"findings-list\">
-                        $SEARCH_DETAILS
-                    </div>
-                </div>
-
-                <div class=\"controller-section\">
-                    <h3>UserController ($USER_FINDINGS hallazgos)</h3>
-                    <div class=\"findings-list\">
-                        $USER_DETAILS
-                    </div>
-                </div>
-
-                <h2 class=\"section-title\">Patrones de Seguridad Detectados</h2>
-                <div class=\"controller-section\">
-                    <div class=\"metric-grid\">
-                        <div class=\"metric-card\">
-                            <div class=\"metric-title\">Password Hashing</div>
-                            <div class=\"metric-value good\">$PASSWORD_HASH_COUNT</div>
-                            <div class=\"metric-detail\">Implementaciones seguras</div>
+                <h2 class=\"section-title\">Hallazgos Detallados</h2>
+                <div class=\"findings-container\">
+                    <div class=\"finding-item\">
+                        <div class=\"finding-header\">
+                            <span class=\"finding-severity high\">Alta</span>
+                            <span class=\"finding-rule\">$RULE_ID</span>
                         </div>
-                        <div class=\"metric-card\">
-                            <div class=\"metric-title\">Prepared Statements</div>
-                            <div class=\"metric-value good\">$PREPARED_STMT_COUNT</div>
-                            <div class=\"metric-detail\">Protección SQL Injection</div>
-                        </div>
-                        <div class=\"metric-card\">
-                            <div class=\"metric-title\">Error Logging</div>
-                            <div class=\"metric-value info\">$ERROR_LOG_COUNT</div>
-                            <div class=\"metric-detail\">Puntos de logging</div>
-                        </div>
-                        <div class=\"metric-card\">
-                            <div class=\"metric-title\">Input Validation</div>
-                            <div class=\"metric-value info\">$INPUT_VALIDATION_COUNT</div>
-                            <div class=\"metric-detail\">Validaciones</div>
-                        </div>
-                        <div class=\"metric-card\">
-                            <div class=\"metric-title\">Session Management</div>
-                            <div class=\"metric-value info\">$SESSION_MGMT_COUNT</div>
-                            <div class=\"metric-detail\">Usos de sesión</div>
+                        <div class=\"finding-file\">$FILE_PATH:$LINE_NUMBER</div>
+                        <div class=\"finding-message\">$MESSAGE</div>
+                        <div class=\"finding-details\">
+                            <div class=\"code-preview\">$CODE_SNIPPET</div>
                         </div>
                     </div>
+                    
+                    <!-- Más hallazgos aquí -->
                 </div>
 
-                <h2 class=\"section-title\">Métricas de Código</h2>
-                <div class=\"controller-section\">
-                    <pre class=\"code-metrics\">$CODE_METRICS</pre>
+                <h2 class=\"section-title\">Archivos Omitidos</h2>
+                <div class=\"findings-container\">
+                    <h3>Errores de Parsing</h3>
+                    <div class=\"code-preview\">$PARSE_ERROR_FILES</div>
+                    
+                    <h3>Archivos Grandes (>1MB)</h3>
+                    <div class=\"code-preview\">$LARGE_FILES</div>
+                    
+                    <h3>Archivos Ignorados</h3>
+                    <div class=\"code-preview\">$IGNORED_FILES</div>
                 </div>
 
                 <div style=\"text-align: right; margin-top: 30px; color: #666;\">
@@ -667,8 +737,7 @@ jobs:
         </html>" > public/semgrep/index.html
 
     - name: Install Snyk
-      run: |
-        python -m pip install snyk
+      run: npm install -g snyk
 
     - name: Run Snyk Analysis
       env:
