@@ -397,10 +397,13 @@ jobs:
 
     - name: Semgrep Scan
       run: |
+        # Crear directorio para resultados temporales
+        mkdir -p temp_results
+
         echo "🔍 ANÁLISIS DETALLADO DE SEGURIDAD EN CONTROLLERS"
         echo "=============================================="
         
-        # Ejecutar scan detallado
+        # Ejecutar scan y guardar resultados
         semgrep scan \
           --config "p/php" \
           --config "p/security-audit" \
@@ -414,76 +417,39 @@ jobs:
           --severity WARNING \
           --json > semgrep_results.json
 
-        echo -e "\n📊 ANÁLISIS DETALLADO POR CONTROLADOR"
-        echo "====================================="
-        
-        # Análisis por controlador
-        for file in src/Controllers/*.php; do
-          echo -e "\n🔍 Analizando: $(basename $file)"
-          echo "----------------------------------------"
-          
-          # Contar líneas de código
-          total_lines=$(wc -l < "$file")
-          echo "   📝 Líneas totales: $total_lines"
-          
-          # Análisis de funciones
-          echo "   🔧 Funciones detectadas:"
-          grep -n "function" "$file" | while read -r line; do
-            echo "      • $line"
-          done
-          
-          # Extraer hallazgos específicos del archivo
-          echo "   ⚠️ Hallazgos de seguridad:"
-          jq -r --arg file "$file" '
-            .results[] | 
-            select(.path == $file) | 
-            "      - Línea \(.start.line): \(.extra.message)\n        Severidad: \(.extra.severity)\n        Tipo: \(.check_id)\n        Código: \(.extra.lines)"
-          ' semgrep_results.json || echo "      ✅ No se encontraron problemas"
-          
-          # Análisis de patrones comunes
-          echo "   🔍 Patrones detectados:"
-          {
-            echo "      • Uso de $_POST: $(grep -c "\$_POST" "$file")"
-            echo "      • Uso de $_GET: $(grep -c "\$_GET" "$file")"
-            echo "      • Queries SQL: $(grep -c "query(" "$file")"
-            echo "      • Validaciones: $(grep -c "validate\|sanitize" "$file")"
-            echo "      • Try-Catch blocks: $(grep -c "try {" "$file")"
-          }
-        done
-
-        echo -e "\n🎯 ANÁLISIS DE VULNERABILIDADES"
-        echo "=============================="
-        jq -r '
-          .results[] | 
-          select(.extra.severity != null) |
-          "   • [\(.extra.severity)] \(.path):\(.start.line) - \(.extra.message)"
-        ' semgrep_results.json || echo "   ✅ No se encontraron vulnerabilidades"
-
-        echo -e "\n🔒 MÉTRICAS DE SEGURIDAD"
-        echo "======================="
-        {
-          echo "   • Archivos analizados: $(ls src/Controllers/*.php | wc -l)"
-          echo "   • Total líneas de código: $(find src/Controllers -name "*.php" -exec wc -l {} + | tail -1 | awk '{print $1}')"
-          echo "   • Hallazgos por severidad:"
-          jq -r '
-            .results[] | 
-            select(.extra.severity != null) | 
-            .extra.severity
-          ' semgrep_results.json | sort | uniq -c | while read count severity; do
-            echo "      - $severity: $count"
-          done
-        }
-
-        echo -e "\n📈 COBERTURA DE ANÁLISIS"
-        echo "======================="
+        # Guardar métricas generales
+        total_files=$(ls src/Controllers/*.php | wc -l)
         total_lines=$(find src/Controllers -name "*.php" -exec wc -l {} + | tail -1 | awk '{print $1}')
         affected_lines=$(jq -r '.results | length' semgrep_results.json)
-        if [ $total_lines -gt 0 ] && [ ! -z "$affected_lines" ]; then
-          safe_percentage=$(echo "scale=2; 100 - ($affected_lines * 100 / $total_lines)" | bc)
-          echo "   • Líneas totales: $total_lines"
-          echo "   • Líneas afectadas: $affected_lines"
-          echo "   • Código seguro: $safe_percentage%"
-        fi
+        safe_percentage=$(echo "scale=2; 100 - ($affected_lines * 100 / $total_lines)" | bc)
+
+        # Guardar métricas en archivo
+        echo "$total_files" > temp_results/total_files
+        echo "$total_lines" > temp_results/total_lines
+        echo "$safe_percentage" > temp_results/safe_percentage
+
+        # Analizar cada controlador y guardar resultados
+        for file in src/Controllers/*.php; do
+          filename=$(basename $file)
+          
+          # Crear archivo temporal para cada controlador
+          echo "=== $filename ===" > "temp_results/$filename.txt"
+          
+          # Guardar líneas totales
+          wc -l < "$file" >> "temp_results/$filename.txt"
+          
+          # Guardar funciones detectadas
+          echo "=== FUNCIONES ===" >> "temp_results/$filename.txt"
+          grep -n "function" "$file" >> "temp_results/$filename.txt"
+          
+          # Guardar patrones
+          echo "=== PATRONES ===" >> "temp_results/$filename.txt"
+          echo "POST: $(grep -c "\$_POST" "$file")" >> "temp_results/$filename.txt"
+          echo "GET: $(grep -c "\$_GET" "$file")" >> "temp_results/$filename.txt"
+          echo "SQL: $(grep -c "query(" "$file")" >> "temp_results/$filename.txt"
+          echo "Validaciones: $(grep -c "validate\|sanitize" "$file")" >> "temp_results/$filename.txt"
+          echo "Try-Catch: $(grep -c "try {" "$file")" >> "temp_results/$filename.txt"
+        done
 
     - name: Update Semgrep HTML Report
       run: |
@@ -575,28 +541,31 @@ jobs:
                     <div class="stats">
                         <div class="stat-card">
                             <h3>Archivos Analizados</h3>
-                            <p>$(ls src/Controllers/*.php | wc -l) archivos</p>
+                            <p>'$(cat temp_results/total_files)' archivos</p>
                         </div>
                         <div class="stat-card">
                             <h3>Total Líneas</h3>
-                            <p>$(find src/Controllers -name "*.php" -exec wc -l {} + | tail -1 | awk "{print $1}") líneas</p>
+                            <p>'$(cat temp_results/total_lines)' líneas</p>
                         </div>
                         <div class="stat-card">
                             <h3>Código Seguro</h3>
-                            <p>100.00%</p>
+                            <p>'$(cat temp_results/safe_percentage)'%</p>
                         </div>
                     </div>
                 </div>
 
                 <h2>Hallazgos por Archivo</h2>
                 
-                $(for file in src/Controllers/*.php; do
-                    filename=$(basename $file)
-                    lines=$(wc -l < "$file")
-                    functions=$(grep -n "function" "$file")
-                    trycatch=$(grep -c "try {" "$file")
-                    queries=$(grep -c "query(" "$file")
-                    validations=$(grep -c "validate\|sanitize" "$file")
+                '"$(for file in temp_results/*.txt; do
+                    [[ $(basename "$file") == "total_files" ]] && continue
+                    [[ $(basename "$file") == "total_lines" ]] && continue
+                    [[ $(basename "$file") == "safe_percentage" ]] && continue
+                    
+                    filename=$(head -n 1 "$file" | cut -d "=" -f2 | tr -d " ")
+                    lines=$(sed -n "2p" "$file")
+                    functions=$(sed -n "/=== FUNCIONES ===/,/=== PATRONES ===/p" "$file" | grep -v "===")
+                    
+                    patterns=$(tail -n 5 "$file")
                     
                     echo "<div class=\"finding\">"
                     echo "<div class=\"file-header\">$filename</div>"
@@ -605,9 +574,7 @@ jobs:
                     echo "<div class=\"details\">"
                     echo "<ul>"
                     echo "<li>Líneas totales: $lines</li>"
-                    echo "<li>Try-Catch blocks: $trycatch</li>"
-                    echo "<li>Queries SQL: $queries</li>"
-                    echo "<li>Validaciones: $validations</li>"
+                    echo "<li>$patterns</li>"
                     echo "</ul>"
                     echo "<h4>Funciones detectadas:</h4>"
                     echo "<div class=\"code-snippet\">"
@@ -616,19 +583,22 @@ jobs:
                     echo "</div>"
                     echo "</div>"
                     echo "</div>"
-                done)
+                done)"'
 
                 <div class="summary">
                     <h2>Notas Adicionales</h2>
                     <ul>
-                        <li>Análisis completado: $(date "+%Y-%m-%d %H:%M:%S")</li>
-                        <li>Total archivos analizados: $(ls src/Controllers/*.php | wc -l)</li>
-                        <li>Total líneas de código: $(find src/Controllers -name "*.php" -exec wc -l {} + | tail -1 | awk "{print $1}")</li>
+                        <li>Análisis completado: '$(date "+%Y-%m-%d %H:%M:%S")'</li>
+                        <li>Total archivos analizados: '$(cat temp_results/total_files)'</li>
+                        <li>Total líneas de código: '$(cat temp_results/total_lines)'</li>
                     </ul>
                 </div>
             </div>
         </body>
         </html>' > public/semgrep/index.html
+
+        # Limpiar archivos temporales
+        rm -rf temp_results
 
     - name: Install Snyk
       run: npm install -g snyk
