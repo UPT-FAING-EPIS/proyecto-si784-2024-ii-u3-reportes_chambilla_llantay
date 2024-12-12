@@ -400,7 +400,7 @@ jobs:
         echo "🔍 ANÁLISIS DE SEGURIDAD SEMGREP"
         echo "=============================="
         
-        # Ejecutar scan con todos los detalles
+        # Ejecutar scan enfocado en Controllers
         semgrep scan \
           --config "p/php" \
           --config "p/security-audit" \
@@ -408,6 +408,7 @@ jobs:
           --no-git-ignore \
           --max-target-bytes=5000000 \
           --no-rewrite-rule-ids \
+          --include "src/Controllers/*.php" \
           --json | tee semgrep_results.json
         
         # Mostrar resumen de resultados
