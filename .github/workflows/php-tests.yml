@@ -406,12 +406,12 @@ jobs:
           --config "p/security-audit" \
           --config "p/owasp-top-ten" \
           --config "p/ci" \
-          --verbose \
           --no-git-ignore \
           --max-target-bytes=5000000 \
           --no-rewrite-rule-ids \
           --include "src/Controllers/*.php" \
-          --quiet \
+          --severity ERROR \
+          --severity WARNING \
           --json | tee semgrep_results.json
 
         echo -e "\n📊 ANÁLISIS DETALLADO POR CONTROLADOR"
@@ -422,68 +422,61 @@ jobs:
           echo -e "\n🔍 Analizando: $(basename $file)"
           echo "----------------------------------------"
           
-          # Contar líneas de código
+          # Contar líneas de código y complejidad
           total_lines=$(wc -l < "$file")
-          echo "   📝 Líneas totales: $total_lines"
+          functions_count=$(grep -c "function" "$file")
+          echo "   📝 Estadísticas:"
+          echo "      • Líneas totales: $total_lines"
+          echo "      • Funciones: $functions_count"
+          echo "      • Promedio líneas/función: $((total_lines / (functions_count > 0 ? functions_count : 1)))"
           
-          # Análisis de funciones
-          echo "   🔧 Funciones detectadas:"
+          # Análisis de funciones con detalles
+          echo "   🔧 Análisis de funciones:"
           grep -n "function" "$file" | while read -r line; do
-            echo "      • $line"
+            line_num=$(echo "$line" | cut -d: -f1)
+            func_name=$(echo "$line" | grep -o "function [a-zA-Z0-9_]*" | cut -d' ' -f2)
+            # Contar líneas de la función
+            next_func_line=$(grep -A 1 "function" "$file" | grep -n "function" | head -n 2 | tail -n 1 | cut -d- -f1)
+            if [ -z "$next_func_line" ]; then
+              next_func_line=$(wc -l < "$file")
+            fi
+            func_lines=$((next_func_line - line_num))
+            echo "      • $func_name (línea $line_num, ~$func_lines líneas)"
           done
           
-          # Extraer hallazgos específicos del archivo
-          echo "   ⚠️ Hallazgos de seguridad:"
+          # Análisis de seguridad
+          echo "   ⚠️ Análisis de seguridad:"
           jq -r --arg file "$file" '
             .results[] | 
             select(.path == $file) | 
-            "      - Línea \(.start.line): \(.extra.message)\n        Severidad: \(.extra.severity)\n        Tipo: \(.check_id)\n        Código: \(.extra.lines)"
-          ' semgrep_results.json || echo "      ✅ No se encontraron problemas"
+            "      • [\(.extra.severity)] Línea \(.start.line):\n        Problema: \(.extra.message)\n        Impacto: \(.extra.metadata.impact)\n        Recomendación: \(.extra.metadata.fix)\n        Código: \(.extra.lines)"
+          ' semgrep_results.json || echo "      ✅ No se encontraron problemas de seguridad"
           
-          # Análisis de patrones comunes
-          echo "   🔍 Patrones detectados:"
+          # Análisis de patrones y métricas
+          echo "   🔍 Métricas de código:"
           {
-            echo "      • Uso de $_POST: $(grep -c "\$_POST" "$file")"
-            echo "      • Uso de $_GET: $(grep -c "\$_GET" "$file")"
-            echo "      • Queries SQL: $(grep -c "query(" "$file")"
+            echo "      • Métodos públicos: $(grep -c "public function" "$file")"
+            echo "      • Métodos privados: $(grep -c "private function" "$file")"
+            echo "      • Métodos protegidos: $(grep -c "protected function" "$file")"
+            echo "      • Uso de try-catch: $(grep -c "try {" "$file")"
             echo "      • Validaciones: $(grep -c "validate\|sanitize" "$file")"
-            echo "      • Try-Catch blocks: $(grep -c "try {" "$file")"
+            echo "      • Queries SQL: $(grep -c "query(" "$file")"
+            echo "      • Manejo de sesiones: $(grep -c "\$_SESSION" "$file")"
+            echo "      • Manejo de entrada: $(grep -c "\$_POST\|\$_GET" "$file")"
           }
         done
 
-        echo -e "\n🎯 ANÁLISIS DE VULNERABILIDADES"
-        echo "=============================="
-        jq -r '
-          .results[] | 
-          select(.extra.severity != null) |
-          "   • [\(.extra.severity)] \(.path):\(.start.line) - \(.extra.message)"
-        ' semgrep_results.json || echo "   ✅ No se encontraron vulnerabilidades"
-
-        echo -e "\n🔒 MÉTRICAS DE SEGURIDAD"
-        echo "======================="
-        {
-          echo "   • Archivos analizados: $(ls src/Controllers/*.php | wc -l)"
-          echo "   • Total líneas de código: $(find src/Controllers -name "*.php" -exec wc -l {} + | tail -1 | awk '{print $1}')"
-          echo "   • Hallazgos por severidad:"
-          jq -r '
-            .results[] | 
-            select(.extra.severity != null) | 
-            .extra.severity
-          ' semgrep_results.json | sort | uniq -c | while read count severity; do
-            echo "      - $severity: $count"
-          done
-        }
-
-        echo -e "\n📈 COBERTURA DE ANÁLISIS"
-        echo "======================="
+        # Resumen general
+        echo -e "\n📈 RESUMEN GENERAL"
+        echo "================="
+        total_files=$(ls src/Controllers/*.php | wc -l)
         total_lines=$(find src/Controllers -name "*.php" -exec wc -l {} + | tail -1 | awk '{print $1}')
-        affected_lines=$(jq -r '.results | length' semgrep_results.json)
-        if [ $total_lines -gt 0 ] && [ ! -z "$affected_lines" ]; then
-          safe_percentage=$(echo "scale=2; 100 - ($affected_lines * 100 / $total_lines)" | bc)
-          echo "   • Líneas totales: $total_lines"
-          echo "   • Líneas afectadas: $affected_lines"
-          echo "   • Código seguro: $safe_percentage%"
-        fi
+        total_functions=$(grep -r "function" src/Controllers/ | wc -l)
+        echo "   • Total archivos: $total_files"
+        echo "   • Total líneas: $total_lines"
+        echo "   • Total funciones: $total_functions"
+        echo "   • Promedio líneas/archivo: $((total_lines / total_files))"
+        echo "   • Promedio funciones/archivo: $((total_functions / total_files))"
 
     - name: Update Semgrep HTML Report
       run: |
