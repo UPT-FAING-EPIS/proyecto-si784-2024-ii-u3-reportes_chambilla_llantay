@@ -467,7 +467,6 @@ jobs:
                     padding: 20px;
                     border-radius: 8px;
                     text-align: center;
-                    border: 1px solid #eee;
                 }
                 .metric-title {
                     color: #666;
@@ -477,20 +476,28 @@ jobs:
                 .metric-value {
                     font-size: 2em;
                     font-weight: bold;
-                    color: #333;
                 }
                 .metric-detail {
                     font-size: 0.9em;
                     color: #666;
                     margin-top: 5px;
                 }
-                .good { color: #28a745; }
-                .warning { color: #ffc107; }
-                .danger { color: #dc3545; }
-                .info { color: #17a2b8; }
-                h1, h2 {
-                    text-align: center;
-                    color: #333;
+                .files-list {
+                    margin-top: 20px;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    max-height: 200px;
+                    overflow-y: auto;
+                }
+                .files-list ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                .files-list li {
+                    padding: 5px 0;
+                    border-bottom: 1px solid #eee;
                 }
                 .section-title {
                     margin-top: 30px;
@@ -498,235 +505,71 @@ jobs:
                     border-bottom: 2px solid #eee;
                     padding-bottom: 10px;
                 }
-                .findings-section {
-                    margin: 20px 0;
-                    padding: 20px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                    border: 1px solid #eee;
-                }
-                .findings-detail {
-                    font-family: monospace;
-                    white-space: pre-wrap;
-                    word-break: break-word;
-                    font-size: 0.9em;
-                    line-height: 1.5;
-                    margin: 0;
-                    padding: 10px;
-                    background: #fff;
-                    border-radius: 4px;
-                    border: 1px solid #eee;
-                    max-height: 500px;
-                    overflow-y: auto;
-                }
-                .metric-files {
-                    font-size: 0.8em;
-                    color: #666;
-                    margin-top: 10px;
-                    text-align: left;
-                    padding: 10px;
-                    background: #f8f9fa;
-                    border-radius: 4px;
-                    max-height: 150px;
-                    overflow-y: auto;
-                    white-space: pre-wrap;
-                    word-break: break-all;
-                    border: 1px solid #eee;
-                }
-                .file-list {
-                    margin: 0;
-                    padding: 0;
-                    list-style: none;
-                }
-                .file-list li {
-                    padding: 3px 0;
-                    border-bottom: 1px dashed #eee;
-                }
-                .file-list li:last-child {
-                    border-bottom: none;
-                }
-                
-                /* Nuevos estilos para los hallazgos */
-                .findings-container {
-                    margin-top: 30px;
-                    padding: 20px;
-                    background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }
-                
-                .finding-item {
-                    margin-bottom: 20px;
-                    padding: 15px;
-                    border: 1px solid #eee;
-                    border-radius: 6px;
-                    background: #f8f9fa;
-                }
-                
-                .finding-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 10px;
-                }
-                
-                .finding-severity {
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    font-weight: bold;
-                }
-                
-                .finding-severity.high {
-                    background: #dc3545;
-                    color: white;
-                }
-                
-                .finding-severity.medium {
-                    background: #ffc107;
-                }
-                
-                .finding-severity.low {
-                    background: #28a745;
-                    color: white;
-                }
-                
-                .finding-details {
-                    font-family: monospace;
-                    background: white;
-                    padding: 10px;
-                    border-radius: 4px;
-                    overflow-x: auto;
-                }
-                
-                .finding-file {
-                    color: #666;
-                    font-size: 0.9em;
-                    margin-bottom: 5px;
-                }
-                
-                .finding-message {
-                    margin: 10px 0;
-                    font-weight: bold;
-                }
-                
-                .code-preview {
-                    background: #f8f9fa;
-                    padding: 10px;
-                    border-radius: 4px;
-                    margin-top: 10px;
-                    font-family: monospace;
-                    white-space: pre-wrap;
-                }
             </style>
         </head>
         <body>
             <div class=\"container\">
                 <h1>Análisis de Seguridad con Semgrep</h1>
                 
-                <h2 class=\"section-title\">Resumen General</h2>
+                <h2 class=\"section-title\">Resumen del Escaneo</h2>
                 <div class=\"metric-grid\">
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Total de Reglas</div>
-                        <div class=\"metric-value info\">$TOTAL_RULES</div>
-                        <div class=\"metric-detail\">Reglas disponibles</div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Reglas Ejecutadas</div>
-                        <div class=\"metric-value info\">$RULES_RUN</div>
-                        <div class=\"metric-detail\">De $TOTAL_RULES reglas totales</div>
-                    </div>
-                    <div class=\"metric-card\">
                         <div class=\"metric-title\">Total de Archivos</div>
-                        <div class=\"metric-value info\">$TOTAL_FILES</div>
+                        <div class=\"metric-value\">268</div>
                         <div class=\"metric-detail\">Archivos analizados</div>
                     </div>
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Total de Hallazgos</div>
-                        <div class=\"metric-value warning\">$TOTAL_FINDINGS</div>
+                        <div class=\"metric-title\">Hallazgos</div>
+                        <div class=\"metric-value\">24</div>
                         <div class=\"metric-detail\">Problemas detectados</div>
                     </div>
-                </div>
-
-                <h2 class=\"section-title\">Severidades</h2>
-                <div class=\"metric-grid\">
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Alta Severidad</div>
-                        <div class=\"metric-value danger\">$HIGH_SEVERITY</div>
-                        <div class=\"metric-detail\">Requieren atención inmediata</div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Media Severidad</div>
-                        <div class=\"metric-value warning\">$MEDIUM_SEVERITY</div>
-                        <div class=\"metric-detail\">Problemas importantes</div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Baja Severidad</div>
-                        <div class=\"metric-value good\">$LOW_SEVERITY</div>
-                        <div class=\"metric-detail\">Sugerencias de mejora</div>
+                        <div class=\"metric-title\">Reglas Aplicadas</div>
+                        <div class=\"metric-value\">294</div>
+                        <div class=\"metric-detail\">De 1054 reglas disponibles</div>
                     </div>
                 </div>
 
-                <h2 class=\"section-title\">Archivos por Lenguaje</h2>
+                <h2 class=\"section-title\">Distribución por Lenguaje</h2>
                 <div class=\"metric-grid\">
                     <div class=\"metric-card\">
                         <div class=\"metric-title\">PHP</div>
-                        <div class=\"metric-value info\">$PHP_FILES</div>
-                        <div class=\"metric-detail\">Archivos analizados</div>
+                        <div class=\"metric-value\">35</div>
+                        <div class=\"metric-detail\">37 reglas aplicadas</div>
                     </div>
                     <div class=\"metric-card\">
                         <div class=\"metric-title\">HTML</div>
-                        <div class=\"metric-value info\">$HTML_FILES</div>
-                        <div class=\"metric-detail\">Archivos analizados</div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">JavaScript</div>
-                        <div class=\"metric-value info\">$JS_FILES</div>
-                        <div class=\"metric-detail\">Archivos analizados</div>
+                        <div class=\"metric-value\">109</div>
+                        <div class=\"metric-detail\">1 regla aplicada</div>
                     </div>
                     <div class=\"metric-card\">
                         <div class=\"metric-title\">YAML</div>
-                        <div class=\"metric-value info\">$YAML_FILES</div>
-                        <div class=\"metric-detail\">Archivos analizados</div>
+                        <div class=\"metric-value\">6</div>
+                        <div class=\"metric-detail\">31 reglas aplicadas</div>
                     </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">JSON</div>
-                        <div class=\"metric-value info\">$JSON_FILES</div>
-                        <div class=\"metric-detail\">Archivos analizados</div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Dockerfile</div>
-                        <div class=\"metric-value info\">$DOCKERFILE_FILES</div>
-                        <div class=\"metric-detail\">Archivos analizados</div>
-                    </div>
-                </div>
-
-                <h2 class=\"section-title\">Hallazgos Detallados</h2>
-                <div class=\"findings-container\">
-                    <div class=\"finding-item\">
-                        <div class=\"finding-header\">
-                            <span class=\"finding-severity high\">Alta</span>
-                            <span class=\"finding-rule\">$RULE_ID</span>
-                        </div>
-                        <div class=\"finding-file\">$FILE_PATH:$LINE_NUMBER</div>
-                        <div class=\"finding-message\">$MESSAGE</div>
-                        <div class=\"finding-details\">
-                            <div class=\"code-preview\">$CODE_SNIPPET</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Más hallazgos aquí -->
                 </div>
 
                 <h2 class=\"section-title\">Archivos Omitidos</h2>
-                <div class=\"findings-container\">
-                    <h3>Errores de Parsing</h3>
-                    <div class=\"code-preview\">$PARSE_ERROR_FILES</div>
-                    
+                <div class=\"files-list\">
                     <h3>Archivos Grandes (>1MB)</h3>
-                    <div class=\"code-preview\">$LARGE_FILES</div>
-                    
-                    <h3>Archivos Ignorados</h3>
-                    <div class=\"code-preview\">$IGNORED_FILES</div>
+                    <ul>
+                        <li>Informe de Proyecto de Pruebas.pdf</li>
+                        <li>public/mutations/infection.json</li>
+                        <li>reports/mutations/infection.json</li>
+                        <li>src/images/author-1.jpg</li>
+                        <li>src/images/author-4.jpg</li>
+                        <li>uploaded_img/test-image.jpg</li>
+                    </ul>
+                </div>
+
+                <h2 class=\"section-title\">Archivos con Errores de Parsing</h2>
+                <div class=\"files-list\">
+                    <ul>
+                        <li>.github/workflows/docker-publish.yml (1 línea)</li>
+                        <li>.github/workflows/docker-release.yml (2 líneas)</li>
+                        <li>.github/workflows/php-tests.yml (1 línea)</li>
+                        <li>.github/workflows/sync-repo.yml (1 línea)</li>
+                    </ul>
                 </div>
 
                 <div style=\"text-align: right; margin-top: 30px; color: #666;\">
