@@ -555,6 +555,78 @@ jobs:
                 .file-list li:last-child {
                     border-bottom: none;
                 }
+                
+                /* Nuevos estilos para los hallazgos */
+                .findings-container {
+                    margin-top: 30px;
+                    padding: 20px;
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                
+                .finding-item {
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    border: 1px solid #eee;
+                    border-radius: 6px;
+                    background: #f8f9fa;
+                }
+                
+                .finding-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 10px;
+                }
+                
+                .finding-severity {
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-weight: bold;
+                }
+                
+                .finding-severity.high {
+                    background: #dc3545;
+                    color: white;
+                }
+                
+                .finding-severity.medium {
+                    background: #ffc107;
+                }
+                
+                .finding-severity.low {
+                    background: #28a745;
+                    color: white;
+                }
+                
+                .finding-details {
+                    font-family: monospace;
+                    background: white;
+                    padding: 10px;
+                    border-radius: 4px;
+                    overflow-x: auto;
+                }
+                
+                .finding-file {
+                    color: #666;
+                    font-size: 0.9em;
+                    margin-bottom: 5px;
+                }
+                
+                .finding-message {
+                    margin: 10px 0;
+                    font-weight: bold;
+                }
+                
+                .code-preview {
+                    background: #f8f9fa;
+                    padding: 10px;
+                    border-radius: 4px;
+                    margin-top: 10px;
+                    font-family: monospace;
+                    white-space: pre-wrap;
+                }
             </style>
         </head>
         <body>
@@ -638,43 +710,33 @@ jobs:
                     </div>
                 </div>
 
-                <h2 class=\"section-title\">Resumen del Escaneo</h2>
-                <div class=\"metric-grid\">
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Parcialmente Escaneados</div>
-                        <div class=\"metric-value warning\">$PARTIALLY_SCANNED</div>
-                        <div class=\"metric-detail\">Archivos con errores de parsing:</div>
-                        <div class=\"metric-files\">
-                            <ul class=\"file-list\">
-                                $PARSE_ERROR_FILES
-                            </ul>
+                <h2 class=\"section-title\">Hallazgos Detallados</h2>
+                <div class=\"findings-container\">
+                    <div class=\"finding-item\">
+                        <div class=\"finding-header\">
+                            <span class=\"finding-severity high\">Alta</span>
+                            <span class=\"finding-rule\">$RULE_ID</span>
+                        </div>
+                        <div class=\"finding-file\">$FILE_PATH:$LINE_NUMBER</div>
+                        <div class=\"finding-message\">$MESSAGE</div>
+                        <div class=\"finding-details\">
+                            <div class=\"code-preview\">$CODE_SNIPPET</div>
                         </div>
                     </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Omitidos por Tamaño</div>
-                        <div class=\"metric-value warning\">$SKIPPED_LARGE</div>
-                        <div class=\"metric-detail\">Archivos > 1.0 MB:</div>
-                        <div class=\"metric-files\">
-                            <ul class=\"file-list\">
-                                $LARGE_FILES
-                            </ul>
-                        </div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Omitidos por Patrón</div>
-                        <div class=\"metric-value info\">$SKIPPED_IGNORED</div>
-                        <div class=\"metric-detail\">Archivos en .semgrepignore:</div>
-                        <div class=\"metric-files\">
-                            <ul class=\"file-list\">
-                                $IGNORED_FILES
-                            </ul>
-                        </div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">Reglas Ejecutadas</div>
-                        <div class=\"metric-value info\">$RULES_RUN</div>
-                        <div class=\"metric-detail\">De $TOTAL_RULES reglas totales</div>
-                    </div>
+                    
+                    <!-- Más hallazgos aquí -->
+                </div>
+
+                <h2 class=\"section-title\">Archivos Omitidos</h2>
+                <div class=\"findings-container\">
+                    <h3>Errores de Parsing</h3>
+                    <div class=\"code-preview\">$PARSE_ERROR_FILES</div>
+                    
+                    <h3>Archivos Grandes (>1MB)</h3>
+                    <div class=\"code-preview\">$LARGE_FILES</div>
+                    
+                    <h3>Archivos Ignorados</h3>
+                    <div class=\"code-preview\">$IGNORED_FILES</div>
                 </div>
 
                 <div style=\"text-align: right; margin-top: 30px; color: #666;\">
