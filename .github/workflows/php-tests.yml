@@ -397,37 +397,33 @@ jobs:
     - name: Semgrep Scan
       run: |
         # Ejecutar scan y generar SARIF
-        semgrep scan --sarif --output=semgrep.sarif --config=auto
+         semgrep scan --sarif --output=semgrep.sarif --config=auto --verbose > scan_output_verbose.txt 2>&1
 
         # Ejecutar CI (opcional)
         semgrep ci || true
 
     - name: Process Semgrep Results
       run: |
-        # Ejecutar scan y guardar output detallado
-        semgrep scan --config=auto --verbose > scan_output_verbose.txt 2>&1
+        # Extraer datos del scan usando patrones más específicos
+        TOTAL_RULES=$(grep "loaded rules:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
+        TOTAL_FILES=$(grep "files in scope:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
+        TOTAL_FINDINGS=$(grep "findings:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
 
-        # Extraer datos del scan
-        TOTAL_RULES=$(grep "Code rules:" scan_output_verbose.txt | grep -o '[0-9]\+' | tail -n1 || echo "0")
-        TOTAL_FILES=$(grep "files tracked by git" scan_output_verbose.txt | grep -o '[0-9]\+' | tail -n1 || echo "0")
-        TOTAL_FINDINGS=$(grep "findings" scan_output_verbose.txt | tail -n1 | grep -o '[0-9]\+ findings' | cut -d' ' -f1 || echo "0")
+        # Extraer datos por lenguaje de manera más precisa
+        PHP_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "php" | grep -o '[0-9]\+' || echo "0")
+        HTML_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "html" | grep -o '[0-9]\+' || echo "0")
+        JS_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "javascript" | grep -o '[0-9]\+' || echo "0")
+        YAML_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "yaml" | grep -o '[0-9]\+' || echo "0")
+        JSON_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "json" | grep -o '[0-9]\+' || echo "0")
+        DOCKERFILE_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "dockerfile" | grep -o '[0-9]\+' || echo "0")
 
-        # Extraer datos por lenguaje desde la tabla de Scan Status
-        PHP_FILES=$(grep "php" scan_output_verbose.txt | grep -o '[0-9]\+ *$' | head -n1 || echo "0")
-        HTML_FILES=$(grep "html" scan_output_verbose.txt | grep -o '[0-9]\+ *$' | head -n1 || echo "0")
-        JS_FILES=$(grep "js " scan_output_verbose.txt | grep -o '[0-9]\+ *$' | head -n1 || echo "0")
-        YAML_FILES=$(grep "yaml" scan_output_verbose.txt | grep -o '[0-9]\+ *$' | head -n1 || echo "0")
-        JSON_FILES=$(grep "json" scan_output_verbose.txt | grep -o '[0-9]\+ *$' | head -n1 || echo "0")
-        DOCKERFILE_FILES=$(grep "dockerfile" scan_output_verbose.txt | grep -o '[0-9]\+ *$' | head -n1 || echo "0")
+        # Extraer datos de severidad
+        HIGH_SEV=$(grep -A 5 "Findings by Severity" scan_output_verbose.txt | grep "error" | grep -o '[0-9]\+' || echo "0")
+        MED_SEV=$(grep -A 5 "Findings by Severity" scan_output_verbose.txt | grep "warning" | grep -o '[0-9]\+' || echo "0")
+        LOW_SEV=$(grep -A 5 "Findings by Severity" scan_output_verbose.txt | grep "info" | grep -o '[0-9]\+' || echo "0")
 
-        # Extraer datos de archivos omitidos
-        SKIPPED_FILES=$(grep -A 50 "Files skipped:" scan_output_verbose.txt | grep -B 50 "Scan Summary" || echo "")
-        PARSE_ERROR_FILES=$(echo "$SKIPPED_FILES" | grep "Partially analyzed:" -A 10 | grep "•" | sed 's/^[[:space:]]*•[[:space:]]*//' || echo "Ninguno")
-        LARGE_FILES=$(echo "$SKIPPED_FILES" | grep "larger than" -A 10 | grep "•" | sed 's/^[[:space:]]*•[[:space:]]*//' || echo "Ninguno")
-        IGNORED_FILES=$(echo "$SKIPPED_FILES" | grep "matching .semgrepignore" -A 50 | grep "•" | sed 's/^[[:space:]]*•[[:space:]]*//' || echo "Ninguno")
-
-        # Extraer hallazgos específicos
-        FINDINGS_DETAILS=$(grep -A 2 ".*Code Findings.*┐" -A 1000 scan_output_verbose.txt | grep -B 1000 "========================================" || echo "No se encontraron hallazgos")
+        # Extraer reglas ejecutadas
+        RULES_RUN=$(grep "Rules run:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
 
         # Exportar variables
         cat << EOF >> $GITHUB_ENV
@@ -440,22 +436,10 @@ jobs:
         YAML_FILES=$YAML_FILES
         JSON_FILES=$JSON_FILES
         DOCKERFILE_FILES=$DOCKERFILE_FILES
-        PARTIALLY_SCANNED=$PARTIALLY_SCANNED
-        SKIPPED_LARGE=$SKIPPED_LARGE
-        SKIPPED_IGNORED=$SKIPPED_IGNORED
+        HIGH_SEVERITY=$HIGH_SEV
+        MED_SEVERITY=$MED_SEV
+        LOW_SEVERITY=$LOW_SEV
         RULES_RUN=$RULES_RUN
-        FINDINGS_DETAILS<<EOF_FINDINGS
-        $FINDINGS_DETAILS
-        EOF_FINDINGS
-        PARSE_ERROR_FILES<<EOF_PARSE
-        $PARSE_ERROR_FILES
-        EOF_PARSE
-        LARGE_FILES<<EOF_LARGE
-        $LARGE_FILES
-        EOF_LARGE
-        IGNORED_FILES<<EOF_IGNORED
-        $IGNORED_FILES
-        EOF_IGNORED
         EOF
 
     - name: Create Semgrep HTML Report
