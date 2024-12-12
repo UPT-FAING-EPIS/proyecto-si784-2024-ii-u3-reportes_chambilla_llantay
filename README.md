@@ -74,6 +74,7 @@ El proyecto FANPAGE abarcará la creación de una plataforma web que permita a l
 ### Diagrama de casos de uso
 ![Casos de Uso Usuario](media/Casos_Uso_Usuario.png)
 ![Casos de Uso Administrador](media/Casos_Uso_Administrador.png)
+![alt text](media/Diagrama_Casos_Uso.svg)
 
 ### Diagrama de Secuencia
 #### Usuario
