@@ -397,25 +397,14 @@ jobs:
 
     - name: Semgrep Scan
       run: |
-        echo "🔍 Iniciando análisis detallado..."
+        echo "🔍 INICIANDO ANÁLISIS SEMGREP"
+        echo "==========================="
         
-        # Crear directorio para resultados
-        mkdir -p scan_results
-        
-        # Ejecutar scan básico y guardar output
-        echo "Ejecutando análisis..."
+        # Ejecutar scan y mostrar resultados directamente
         semgrep scan \
           --config "p/php" \
-          --verbose \
-          --output-format json > scan_results/basic_scan.json 2> scan_results/scan_output.txt
-        
-        # Guardar el output verbose
-        semgrep scan \
-          --config "p/php" \
-          --verbose \
-          2>&1 | tee scan_output_verbose.txt
-        
-        echo "✅ Escaneo completado"
+          --config "p/security-audit" \
+          --verbose
 
     - name: Process Semgrep Results
       if: always()
@@ -448,7 +437,7 @@ jobs:
           echo "TOTAL_FINDINGS=$FINDINGS"
           
           echo "SCAN_SUMMARY<<EOF"
-          echo "=== 📊 RESUMEN DEL ANÁLISIS ==="
+          echo "=== 📊 RESUMEN DEL AN��LISIS ==="
           echo "• Reglas: $RULES"
           echo "• Archivos: $FILES"
           echo "• Hallazgos: $FINDINGS"
