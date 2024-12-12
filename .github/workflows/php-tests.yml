@@ -397,10 +397,10 @@ jobs:
 
     - name: Semgrep Scan
       run: |
-        echo "🔍 ANÁLISIS DE SEGURIDAD SEMGREP"
-        echo "=============================="
+        echo "🔍 ANÁLISIS DETALLADO DE SEGURIDAD EN CONTROLLERS"
+        echo "=============================================="
         
-        # Ejecutar scan enfocado en Controllers
+        # Ejecutar scan detallado
         semgrep scan \
           --config "p/php" \
           --config "p/security-audit" \
@@ -410,10 +410,63 @@ jobs:
           --no-rewrite-rule-ids \
           --include "src/Controllers/*.php" \
           --json | tee semgrep_results.json
+
+        echo -e "\n📊 ANÁLISIS DETALLADO POR CONTROLADOR"
+        echo "====================================="
         
-        # Mostrar resumen de resultados
-        echo "📊 Resumen de Resultados:"
-        cat semgrep_results.json | jq '.'
+        # Análisis por controlador
+        for file in src/Controllers/*.php; do
+          echo -e "\n🔍 Analizando: $(basename $file)"
+          echo "----------------------------------------"
+          
+          # Extraer hallazgos específicos del archivo
+          jq -r --arg file "$file" '
+            .results[] | 
+            select(.path == $file) | 
+            "   ⚠️  Línea \(.start.line):\n      Tipo: \(.check_id)\n      Severidad: \(.extra.severity)\n      Detalle: \(.extra.message)\n      Código: \(.extra.lines)\n      Impacto: \(.extra.metadata.impact)\n      Referencia: \(.extra.metadata.references[0])\n"
+          ' semgrep_results.json
+        done
+
+        echo -e "\n🎯 ESTADÍSTICAS POR TIPO DE VULNERABILIDAD"
+        echo "========================================="
+        jq -r '
+          .results[] | 
+          .check_id + "," + .extra.severity
+        ' semgrep_results.json | 
+        sort | uniq -c | 
+        while read count rule severity; do
+          echo "   • $rule ($severity): $count hallazgos"
+        done
+
+        echo -e "\n🔒 ANÁLISIS DE SEGURIDAD POR CATEGORÍA"
+        echo "====================================="
+        jq -r '
+          .results[] | 
+          .extra.metadata.category + "," + .extra.severity
+        ' semgrep_results.json | 
+        sort | uniq -c | 
+        while read count category severity; do
+          echo "   • $category (Severidad: $severity): $count casos"
+        done
+
+        echo -e "\n⚡ PUNTOS CRÍTICOS IDENTIFICADOS"
+        echo "================================"
+        jq -r '
+          .results[] | 
+          select(.extra.severity == "ERROR" or .extra.severity == "WARNING") |
+          "   ❗ \(.path):\(.start.line) - \(.extra.message)"
+        ' semgrep_results.json
+
+        echo -e "\n📈 MÉTRICAS DE COBERTURA"
+        echo "========================"
+        total_lines=$(find src/Controllers -name "*.php" -exec wc -l {} + | tail -1 | awk '{print $1}')
+        affected_lines=$(jq -r '.results | length' semgrep_results.json)
+        echo "   • Líneas totales analizadas: $total_lines"
+        echo "   • Líneas con hallazgos: $affected_lines"
+        if [ $total_lines -gt 0 ]; then
+          percentage=$(echo "scale=2; 100 - ($affected_lines * 100 / $total_lines)" | bc)
+          echo "   • Código limpio: $percentage%"
+        fi
 
     - name: Update Semgrep HTML Report
       run: |
