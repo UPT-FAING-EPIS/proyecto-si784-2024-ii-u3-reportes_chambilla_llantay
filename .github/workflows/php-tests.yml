@@ -80,11 +80,14 @@ jobs:
       run: |
         echo "Ejecutando Infection tests..."
         
-        # Crear directorios
+        # Crear directorios necesarios
+        echo "Creando directorios..."
         mkdir -p reports/mutations
         mkdir -p coverage/coverage-xml
+        mkdir -p public/mutations
         
         # Crear archivo de configuración de Infection
+        echo "Creando archivo de configuración..."
         echo '{
           "source": {
             "directories": [
@@ -138,12 +141,15 @@ jobs:
           --ignore-msi-with-no-mutations \
           --no-progress || true
         
-        # Verificar el reporte
-        if [ -f "reports/mutations/infection.html" ]; then
-          echo "✓ Reporte de mutations generado correctamente"
-          ls -l reports/mutations/
+        # Verificar y copiar reportes
+        echo "Verificando y copiando reportes..."
+        if [ -d "reports/mutations" ] && [ "$(ls -A reports/mutations)" ]; then
+          echo "Copiando reportes a public/mutations..."
+          cp -r reports/mutations/* public/mutations/
+          echo "✓ Reportes copiados correctamente"
+          ls -l public/mutations/
         else
-          echo "✗ Error: El reporte de mutations no se generó"
+          echo "✗ No se encontraron reportes para copiar"
           echo "Contenido de reports/mutations:"
           ls -la reports/mutations/
         fi
@@ -415,7 +421,7 @@ jobs:
         IGNORED_FILES=$(echo "$SKIPPED_FILES" | grep "matching .semgrepignore" -A 50 | grep "•" | sed 's/^[[:space:]]*•[[:space:]]*//' || echo "Ninguno")
 
         # Extraer hallazgos específicos
-        FINDINGS_DETAILS=$(grep -A 2 "��.*Code Findings.*┐" -A 1000 scan_output_verbose.txt | grep -B 1000 "========================================" || echo "No se encontraron hallazgos")
+        FINDINGS_DETAILS=$(grep -A 2 ".*Code Findings.*┐" -A 1000 scan_output_verbose.txt | grep -B 1000 "========================================" || echo "No se encontraron hallazgos")
 
         # Exportar variables
         cat << EOF >> $GITHUB_ENV
