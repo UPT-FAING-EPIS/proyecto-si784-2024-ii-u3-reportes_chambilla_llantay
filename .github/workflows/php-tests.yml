@@ -399,72 +399,42 @@ jobs:
         # Escanear específicamente los Controllers
         echo "=== Iniciando Análisis de Controllers ==="
         
+        # Crear directorio para resultados
+        mkdir -p scan_results
+
         # Escaneo general de seguridad
         semgrep scan \
           --config "p/security-audit" \
           --config "p/owasp-top-ten" \
           --config "p/php" \
           --include "src/Controllers/*.php" \
-          --sarif --output=semgrep-controllers.sarif \
-          --verbose > controllers_scan.txt 2>&1
+          --json > scan_results/general_scan.json
 
-        # Análisis específico por controller
-        echo "\n=== Análisis por Controller ==="
-        
-        # ContactController
-        echo "\nAnalizando ContactController..."
-        semgrep scan src/Controllers/ContactController.php \
-          --config "p/php" \
-          --config "p/security-audit" \
-          > contact_analysis.txt
-
-        # ProductController
-        echo "\nAnalizando ProductController..."
-        semgrep scan src/Controllers/ProductController.php \
-          --config "p/php" \
-          --config "p/security-audit" \
-          > product_analysis.txt
-
-        # SearchController
-        echo "\nAnalizando SearchController..."
-        semgrep scan src/Controllers/SearchController.php \
-          --config "p/php" \
-          --config "p/security-audit" \
-          > search_analysis.txt
-
-        # UserController
-        echo "\nAnalizando UserController..."
-        semgrep scan src/Controllers/UserController.php \
-          --config "p/php" \
-          --config "p/security-audit" \
-          > user_analysis.txt
+        # Análisis por controller
+        for controller in ContactController ProductController SearchController UserController; do
+          echo "Analizando $controller..."
+          semgrep scan "src/Controllers/${controller}.php" \
+            --config "p/php" \
+            --config "p/security-audit" \
+            --json > "scan_results/${controller}_analysis.json"
+        done
 
         # Procesar resultados
-        echo "\n=== Procesando Resultados ==="
         {
-          echo "CONTACT_FINDINGS=$(grep -c 'findings:' contact_analysis.txt || echo '0')"
-          echo "PRODUCT_FINDINGS=$(grep -c 'findings:' product_analysis.txt || echo '0')"
-          echo "SEARCH_FINDINGS=$(grep -c 'findings:' search_analysis.txt || echo '0')"
-          echo "USER_FINDINGS=$(grep -c 'findings:' user_analysis.txt || echo '0')"
+          # Contar hallazgos por controller
+          echo "TOTAL_FINDINGS=$(jq '.results | length' scan_results/general_scan.json)"
           
-          # Extraer hallazgos específicos
-          echo "CONTACT_DETAILS<<EOF"
-          grep -A 2 'findings:' contact_analysis.txt || echo 'Sin hallazgos'
-          echo "EOF"
-          
-          echo "PRODUCT_DETAILS<<EOF"
-          grep -A 2 'findings:' product_analysis.txt || echo 'Sin hallazgos'
-          echo "EOF"
-          
-          echo "SEARCH_DETAILS<<EOF"
-          grep -A 2 'findings:' search_analysis.txt || echo 'Sin hallazgos'
-          echo "EOF"
-          
-          echo "USER_DETAILS<<EOF"
-          grep -A 2 'findings:' user_analysis.txt || echo 'Sin hallazgos'
-          echo "EOF"
+          for controller in ContactController ProductController SearchController UserController; do
+            findings=$(jq '.results | length' "scan_results/${controller}_analysis.json")
+            echo "${controller}_FINDINGS=$findings"
+            
+            # Extraer detalles
+            echo "${controller}_DETAILS<<EOF"
+            jq -r '.results[] | "- " + .extra.message + " (línea: " + (.start.line | tostring) + ")"' "scan_results/${controller}_analysis.json" || echo "Sin hallazgos"
+            echo "EOF"
+          done
 
-          # Extraer patrones de seguridad encontrados
+          # Extraer patrones de seguridad
           echo "SECURITY_PATTERNS<<EOF"
           {
             echo "=== Patrones de Seguridad ==="
@@ -476,30 +446,37 @@ jobs:
           } | tee security_patterns.txt
           echo "EOF"
 
-          # Extraer métricas de código
+          # Métricas de código
           echo "CODE_METRICS<<EOF"
           {
             echo "=== Métricas de Código ==="
-            echo "Total Controllers: $(ls src/Controllers/*.php | wc -l)"
-            echo "Total Métodos: $(grep -c 'function' src/Controllers/*.php)"
-            echo "Líneas de Código: $(wc -l src/Controllers/*.php | tail -n1)"
+            total_controllers=$(ls src/Controllers/*.php | wc -l)
+            total_methods=$(grep -c 'function' src/Controllers/*.php)
+            total_lines=$(wc -l src/Controllers/*.php | tail -n1 | awk '{print $1}')
+            echo "Total Controllers: $total_controllers"
+            echo "Total Métodos: $total_methods"
+            echo "Líneas de Código: $total_lines"
           } | tee code_metrics.txt
           echo "EOF"
+
+          # Variables para el resumen
+          echo "TOTAL_CONTROLLERS=$total_controllers"
+          echo "TOTAL_METHODS=$total_methods"
+          echo "TOTAL_LINES=$total_lines"
         } >> $GITHUB_ENV
 
-    - name: Process and Show Results
+    - name: Show Analysis Summary
       run: |
-        echo "=== Resultados del Análisis ==="
-        echo "ContactController: $CONTACT_FINDINGS hallazgos"
-        echo "ProductController: $PRODUCT_FINDINGS hallazgos"
-        echo "SearchController: $SEARCH_FINDINGS hallazgos"
-        echo "UserController: $USER_FINDINGS hallazgos"
+        echo "=== Resumen del Análisis ==="
+        echo "Total Controllers: $TOTAL_CONTROLLERS"
+        echo "Total Hallazgos: $TOTAL_FINDINGS"
+        echo "Total Líneas: $TOTAL_LINES"
         
-        echo "\n=== Detalles por Controller ==="
-        echo "$CONTACT_DETAILS"
-        echo "$PRODUCT_DETAILS"
-        echo "$SEARCH_DETAILS"
-        echo "$USER_DETAILS"
+        echo "\n=== Hallazgos por Controller ==="
+        echo "ContactController: $ContactController_FINDINGS"
+        echo "ProductController: $ProductController_FINDINGS"
+        echo "SearchController: $SearchController_FINDINGS"
+        echo "UserController: $UserController_FINDINGS"
         
         echo "\n=== Patrones de Seguridad ==="
         echo "$SECURITY_PATTERNS"
