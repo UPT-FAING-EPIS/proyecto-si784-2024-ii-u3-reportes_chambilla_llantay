@@ -399,116 +399,63 @@ jobs:
       run: |
         echo "🔍 Iniciando análisis detallado..."
         
-        # Verificar la estructura del proyecto
-        echo "Estructura del proyecto:"
-        ls -R
+        # Crear directorio para resultados
+        mkdir -p scan_results
         
-        # Intentar escaneo básico primero
-        echo "\nEjecutando escaneo básico..."
+        # Ejecutar scan básico y guardar output
+        echo "Ejecutando análisis..."
         semgrep scan \
           --config "p/php" \
           --verbose \
-          --json=scan_results.json \
-          || echo "Error en escaneo básico"
+          --output-format json > scan_results/basic_scan.json 2> scan_results/scan_output.txt
         
-        # Si el escaneo básico funciona, intentar el completo
-        if [ -f "scan_results.json" ]; then
-          echo "\nEjecutando escaneo completo..."
-          semgrep scan \
-            --config "p/security-audit" \
-            --config "p/owasp-top-ten" \
-            --config "p/php" \
-            --sarif \
-            --output=semgrep.sarif \
-            --verbose \
-            2>&1 | tee scan_output_verbose.txt
-        fi
+        # Guardar el output verbose
+        semgrep scan \
+          --config "p/php" \
+          --verbose \
+          2>&1 | tee scan_output_verbose.txt
         
         echo "✅ Escaneo completado"
 
     - name: Process Semgrep Results
+      if: always()
       run: |
         echo "📊 Procesando resultados..."
+        
+        # Verificar si existen los archivos
+        echo "Verificando archivos de resultados:"
+        ls -la scan_results/
+        ls -la scan_output_verbose.txt || echo "No existe scan_output_verbose.txt"
         
         # Función para limpiar números
         clean_number() {
           echo "$1" | tr -dc '0-9' || echo '0'
         }
         
-        # Mostrar resumen del escaneo
-        echo "=== 📑 RESUMEN DEL ANÁLISIS ==="
-        echo "Reglas cargadas: $(grep "loaded rules:" scan_output_verbose.txt)"
-        echo "Archivos analizados: $(grep "files in scope:" scan_output_verbose.txt)"
-        echo "Hallazgos totales: $(grep "findings:" scan_output_verbose.txt)"
+        # Mostrar contenido del archivo de salida
+        echo "=== 📑 CONTENIDO DEL ARCHIVO DE SALIDA ==="
+        cat scan_output_verbose.txt || echo "No hay archivo de salida"
         
-        # Extraer y mostrar datos por lenguaje
-        echo "\n=== 🔤 ARCHIVOS POR LENGUAJE ==="
-        grep -A 10 'Scan Status' scan_output_verbose.txt | grep -E 'php|html|javascript|yaml|json|dockerfile'
+        # Extraer datos básicos
+        RULES=$(clean_number "$(grep "loaded rules:" scan_output_verbose.txt 2>/dev/null || echo '0')")
+        FILES=$(clean_number "$(grep "files in scope:" scan_output_verbose.txt 2>/dev/null || echo '0')")
+        FINDINGS=$(clean_number "$(grep "findings:" scan_output_verbose.txt 2>/dev/null || echo '0')")
         
-        # Extraer y mostrar severidades
-        echo "\n=== ⚠️ HALLAZGOS POR SEVERIDAD ==="
-        grep -A 5 'Findings by Severity' scan_output_verbose.txt
-        
-        # Mostrar archivos ignorados
-        echo "\n=== ⏭️ ARCHIVOS IGNORADOS ==="
-        grep "Ignoring" scan_output_verbose.txt || echo "Ningún archivo ignorado"
-        
-        # Mostrar errores de parsing
-        echo "\n=== ❌ ERRORES DE PARSING ==="
-        grep "Parse error" scan_output_verbose.txt || echo "Sin errores de parsing"
-        
-        # Extraer variables para el entorno
-        RULES=$(clean_number "$(grep "loaded rules:" scan_output_verbose.txt || echo '0')")
-        FILES=$(clean_number "$(grep "files in scope:" scan_output_verbose.txt || echo '0')")
-        FINDINGS=$(clean_number "$(grep "findings:" scan_output_verbose.txt || echo '0')")
-        
-        # Extraer datos detallados por lenguaje
-        PHP=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php' || echo '0')")
-        HTML=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html' || echo '0')")
-        JS=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript' || echo '0')")
-        YAML=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml' || echo '0')")
-        JSON=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json' || echo '0')")
-        DOCKER=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile' || echo '0')")
-        
-        # Extraer datos de severidad con detalles
-        HIGH=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error' || echo '0')")
-        MED=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning' || echo '0')")
-        LOW=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info' || echo '0')")
-        
-        # Extraer reglas ejecutadas y mostrar detalles
-        RUN=$(clean_number "$(grep 'Rules run:' scan_output_verbose.txt || echo '0')")
-        echo "\n=== 📋 REGLAS EJECUTADAS ==="
-        echo "Total de reglas: $RUN"
-        
-        # Exportar todas las variables al entorno
+        # Exportar variables básicas
         {
           echo "TOTAL_RULES=$RULES"
           echo "TOTAL_FILES=$FILES"
           echo "TOTAL_FINDINGS=$FINDINGS"
-          echo "PHP_FILES=$PHP"
-          echo "HTML_FILES=$HTML"
-          echo "JS_FILES=$JS"
-          echo "YAML_FILES=$YAML"
-          echo "JSON_FILES=$JSON"
-          echo "DOCKERFILE_FILES=$DOCKER"
-          echo "HIGH_SEVERITY=$HIGH"
-          echo "MED_SEVERITY=$MED"
-          echo "LOW_SEVERITY=$LOW"
-          echo "RULES_RUN=$RUN"
           
-          # Agregar detalles adicionales
           echo "SCAN_SUMMARY<<EOF"
-          echo "=== 📊 RESUMEN COMPLETO DEL ANÁLISIS ==="
-          echo "• Reglas totales: $RULES"
-          echo "• Archivos analizados: $FILES"
-          echo "• Hallazgos totales: $FINDINGS"
-          echo "• Severidad alta: $HIGH"
-          echo "• Severidad media: $MED"
-          echo "• Severidad baja: $LOW"
+          echo "=== 📊 RESUMEN DEL ANÁLISIS ==="
+          echo "• Reglas: $RULES"
+          echo "• Archivos: $FILES"
+          echo "• Hallazgos: $FINDINGS"
           echo "EOF"
         } >> $GITHUB_ENV
         
-        echo "\n=== 🏁 ANÁLISIS COMPLETADO ==="
+        echo "=== 🏁 PROCESAMIENTO COMPLETADO ==="
 
     - name: Create Semgrep HTML Report
       run: |
