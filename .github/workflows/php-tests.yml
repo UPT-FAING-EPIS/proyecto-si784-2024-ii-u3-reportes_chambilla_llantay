@@ -397,50 +397,30 @@ jobs:
     - name: Semgrep Scan
       run: |
         # Ejecutar scan y generar SARIF
-         semgrep scan --sarif --output=semgrep.sarif --config=auto --verbose > scan_output_verbose.txt 2>&1
-
-        # Ejecutar CI (opcional)
-        semgrep ci || true
+        semgrep scan --sarif --output=semgrep.sarif --config=auto --verbose > scan_output_verbose.txt 2>&1
 
     - name: Process Semgrep Results
       run: |
         # Extraer datos del scan usando patrones más específicos
-        TOTAL_RULES=$(grep "loaded rules:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
-        TOTAL_FILES=$(grep "files in scope:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
-        TOTAL_FINDINGS=$(grep "findings:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
+        echo "TOTAL_RULES=$(grep "loaded rules:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "TOTAL_FILES=$(grep "files in scope:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "TOTAL_FINDINGS=$(grep "findings:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
 
         # Extraer datos por lenguaje de manera más precisa
-        PHP_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "php" | grep -o '[0-9]\+' || echo "0")
-        HTML_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "html" | grep -o '[0-9]\+' || echo "0")
-        JS_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "javascript" | grep -o '[0-9]\+' || echo "0")
-        YAML_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "yaml" | grep -o '[0-9]\+' || echo "0")
-        JSON_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "json" | grep -o '[0-9]\+' || echo "0")
-        DOCKERFILE_FILES=$(grep -A 10 "Scan Status" scan_output_verbose.txt | grep "dockerfile" | grep -o '[0-9]\+' || echo "0")
+        echo "PHP_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "HTML_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "JS_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "YAML_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "JSON_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "DOCKERFILE_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
 
         # Extraer datos de severidad
-        HIGH_SEV=$(grep -A 5 "Findings by Severity" scan_output_verbose.txt | grep "error" | grep -o '[0-9]\+' || echo "0")
-        MED_SEV=$(grep -A 5 "Findings by Severity" scan_output_verbose.txt | grep "warning" | grep -o '[0-9]\+' || echo "0")
-        LOW_SEV=$(grep -A 5 "Findings by Severity" scan_output_verbose.txt | grep "info" | grep -o '[0-9]\+' || echo "0")
+        echo "HIGH_SEVERITY=$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "MED_SEVERITY=$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        echo "LOW_SEVERITY=$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
 
         # Extraer reglas ejecutadas
-        RULES_RUN=$(grep "Rules run:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo "0")
-
-        # Exportar variables
-        cat << EOF >> $GITHUB_ENV
-        TOTAL_RULES=$TOTAL_RULES
-        TOTAL_FILES=$TOTAL_FILES
-        TOTAL_FINDINGS=$TOTAL_FINDINGS
-        PHP_FILES=$PHP_FILES
-        HTML_FILES=$HTML_FILES
-        JS_FILES=$JS_FILES
-        YAML_FILES=$YAML_FILES
-        JSON_FILES=$JSON_FILES
-        DOCKERFILE_FILES=$DOCKERFILE_FILES
-        HIGH_SEVERITY=$HIGH_SEV
-        MED_SEVERITY=$MED_SEV
-        LOW_SEVERITY=$LOW_SEV
-        RULES_RUN=$RULES_RUN
-        EOF
+        echo "RULES_RUN=$(grep 'Rules run:' scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
 
     - name: Create Semgrep HTML Report
       run: |
