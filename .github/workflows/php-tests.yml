@@ -81,8 +81,41 @@ jobs:
         echo "Ejecutando Infection tests..."
         
         # Crear directorios
-        mkdir -p public/mutations
+        mkdir -p reports/mutations
         mkdir -p coverage/coverage-xml
+        
+        # Crear archivo de configuración de Infection
+        echo '{
+          "source": {
+            "directories": [
+              "src"
+            ],
+            "excludes": [
+              "src/views"
+            ]
+          },
+          "logs": {
+            "text": "reports/mutations/infection.log",
+            "html": "reports/mutations/infection.html",
+            "summary": "reports/mutations/summary.log",
+            "json": "reports/mutations/infection.json",
+            "perMutator": "reports/mutations/per-mutator.md"
+          },
+          "mutators": {
+            "@default": true
+          },
+          "testFramework": "phpunit",
+          "bootstrap": "./vendor/autoload.php",
+          "initialTestsPhpOptions": "-d xdebug.mode=coverage",
+          "testFrameworkOptions": "--testsuite=Unit,Mutation",
+          "phpUnit": {
+            "configDir": ".",
+            "customPath": "./vendor/bin/phpunit"
+          },
+          "timeout": 10,
+          "minMsi": 60,
+          "minCoveredMsi": 60
+        }' > infection.json.dist
         
         # Generar cobertura XML primero
         echo "Generando cobertura XML..."
@@ -95,7 +128,7 @@ jobs:
         echo "Ejecutando PHPUnit..."
         vendor/bin/phpunit --testdox || true
         
-        # Ejecutar Infection usando la cobertura generada
+        # Ejecutar Infection
         echo "Ejecutando análisis de mutación..."
         XDEBUG_MODE=coverage vendor/bin/infection \
           --threads=4 \
@@ -106,15 +139,13 @@ jobs:
           --no-progress || true
         
         # Verificar el reporte
-        if [ -f "public/mutations/infection.html" ]; then
+        if [ -f "reports/mutations/infection.html" ]; then
           echo "✓ Reporte de mutations generado correctamente"
-          ls -l public/mutations/
+          ls -l reports/mutations/
         else
           echo "✗ Error: El reporte de mutations no se generó"
-          echo "Contenido de public/mutations:"
-          ls -la public/mutations/
-          echo "Contenido de coverage/coverage-xml:"
-          ls -la coverage/coverage-xml/
+          echo "Contenido de reports/mutations:"
+          ls -la reports/mutations/
         fi
 
     - name: Verify Mutations Report
@@ -384,7 +415,7 @@ jobs:
         IGNORED_FILES=$(echo "$SKIPPED_FILES" | grep "matching .semgrepignore" -A 50 | grep "•" | sed 's/^[[:space:]]*•[[:space:]]*//' || echo "Ninguno")
 
         # Extraer hallazgos específicos
-        FINDINGS_DETAILS=$(grep -A 2 "┌.*Code Findings.*┐" -A 1000 scan_output_verbose.txt | grep -B 1000 "========================================" || echo "No se encontraron hallazgos")
+        FINDINGS_DETAILS=$(grep -A 2 "��.*Code Findings.*┐" -A 1000 scan_output_verbose.txt | grep -B 1000 "========================================" || echo "No se encontraron hallazgos")
 
         # Exportar variables
         cat << EOF >> $GITHUB_ENV
