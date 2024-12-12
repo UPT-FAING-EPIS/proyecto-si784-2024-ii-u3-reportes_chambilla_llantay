@@ -917,7 +917,7 @@ jobs:
                 <div class="buttons">
                     <a href="coverage/index.html" class="button coverage-btn">Ver Reporte de Cobertura</a>
                     <a href="bdd/index.html" class="button bdd-btn">Ver Reporte BDD</a>
-                    <a href="mutations/index.html" class="button infection-btn">Ver Reporte Infection</a>
+                    <a href="mutations/infection.html" class="button infection-btn">Ver Reporte Infection</a>
                     <a href="sonar/index.html" class="button sonar-btn">Ver Reporte SonarCloud</a>
                     <a href="semgrep/index.html" class="button semgrep-btn">Ver Reporte Semgrep</a>
                     <a href="snyk/index.html" class="button snyk-btn">Ver Reporte Snyk</a>
