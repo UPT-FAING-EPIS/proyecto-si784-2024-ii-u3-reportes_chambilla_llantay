@@ -394,45 +394,118 @@ jobs:
       run: |
         python -m pip install semgrep
 
-    - name: Semgrep Scan
+    - name: Semgrep Scan Controllers
       run: |
-        # Ejecutar scan y generar SARIF
-        semgrep scan --sarif --output=semgrep.sarif --config=auto --verbose > scan_output_verbose.txt 2>&1
+        # Escanear específicamente los Controllers
+        echo "=== Iniciando Análisis de Controllers ==="
+        
+        # Escaneo general de seguridad
+        semgrep scan \
+          --config "p/security-audit" \
+          --config "p/owasp-top-ten" \
+          --config "p/php" \
+          --include "src/Controllers/*.php" \
+          --sarif --output=semgrep-controllers.sarif \
+          --verbose > controllers_scan.txt 2>&1
 
-    - name: Process and Show Semgrep Results
+        # Análisis específico por controller
+        echo "\n=== Análisis por Controller ==="
+        
+        # ContactController
+        echo "\nAnalizando ContactController..."
+        semgrep scan src/Controllers/ContactController.php \
+          --config "p/php" \
+          --config "p/security-audit" \
+          > contact_analysis.txt
+
+        # ProductController
+        echo "\nAnalizando ProductController..."
+        semgrep scan src/Controllers/ProductController.php \
+          --config "p/php" \
+          --config "p/security-audit" \
+          > product_analysis.txt
+
+        # SearchController
+        echo "\nAnalizando SearchController..."
+        semgrep scan src/Controllers/SearchController.php \
+          --config "p/php" \
+          --config "p/security-audit" \
+          > search_analysis.txt
+
+        # UserController
+        echo "\nAnalizando UserController..."
+        semgrep scan src/Controllers/UserController.php \
+          --config "p/php" \
+          --config "p/security-audit" \
+          > user_analysis.txt
+
+        # Procesar resultados
+        echo "\n=== Procesando Resultados ==="
+        {
+          echo "CONTACT_FINDINGS=$(grep -c 'findings:' contact_analysis.txt || echo '0')"
+          echo "PRODUCT_FINDINGS=$(grep -c 'findings:' product_analysis.txt || echo '0')"
+          echo "SEARCH_FINDINGS=$(grep -c 'findings:' search_analysis.txt || echo '0')"
+          echo "USER_FINDINGS=$(grep -c 'findings:' user_analysis.txt || echo '0')"
+          
+          # Extraer hallazgos específicos
+          echo "CONTACT_DETAILS<<EOF"
+          grep -A 2 'findings:' contact_analysis.txt || echo 'Sin hallazgos'
+          echo "EOF"
+          
+          echo "PRODUCT_DETAILS<<EOF"
+          grep -A 2 'findings:' product_analysis.txt || echo 'Sin hallazgos'
+          echo "EOF"
+          
+          echo "SEARCH_DETAILS<<EOF"
+          grep -A 2 'findings:' search_analysis.txt || echo 'Sin hallazgos'
+          echo "EOF"
+          
+          echo "USER_DETAILS<<EOF"
+          grep -A 2 'findings:' user_analysis.txt || echo 'Sin hallazgos'
+          echo "EOF"
+
+          # Extraer patrones de seguridad encontrados
+          echo "SECURITY_PATTERNS<<EOF"
+          {
+            echo "=== Patrones de Seguridad ==="
+            echo "Password Hashing: $(grep -c 'password_hash' src/Controllers/*.php)"
+            echo "Prepared Statements: $(grep -c 'prepare(' src/Controllers/*.php)"
+            echo "Error Logging: $(grep -c 'error_log' src/Controllers/*.php)"
+            echo "Input Validation: $(grep -c 'isset(' src/Controllers/*.php)"
+            echo "Session Management: $(grep -c 'session' src/Controllers/*.php)"
+          } | tee security_patterns.txt
+          echo "EOF"
+
+          # Extraer métricas de código
+          echo "CODE_METRICS<<EOF"
+          {
+            echo "=== Métricas de Código ==="
+            echo "Total Controllers: $(ls src/Controllers/*.php | wc -l)"
+            echo "Total Métodos: $(grep -c 'function' src/Controllers/*.php)"
+            echo "Líneas de Código: $(wc -l src/Controllers/*.php | tail -n1)"
+          } | tee code_metrics.txt
+          echo "EOF"
+        } >> $GITHUB_ENV
+
+    - name: Process and Show Results
       run: |
-        # Función para limpiar números
-        clean_number() {
-          echo "$1" | tr -dc '0-9' || echo '0'
-        }
+        echo "=== Resultados del Análisis ==="
+        echo "ContactController: $CONTACT_FINDINGS hallazgos"
+        echo "ProductController: $PRODUCT_FINDINGS hallazgos"
+        echo "SearchController: $SEARCH_FINDINGS hallazgos"
+        echo "UserController: $USER_FINDINGS hallazgos"
         
-        echo "=== MOSTRANDO DATOS OBTENIDOS ==="
+        echo "\n=== Detalles por Controller ==="
+        echo "$CONTACT_DETAILS"
+        echo "$PRODUCT_DETAILS"
+        echo "$SEARCH_DETAILS"
+        echo "$USER_DETAILS"
         
-        echo "--- Contenido del archivo scan_output_verbose.txt ---"
-        cat scan_output_verbose.txt
+        echo "\n=== Patrones de Seguridad ==="
+        echo "$SECURITY_PATTERNS"
         
-        echo "\n--- Datos Extraídos ---"
-        echo "Reglas cargadas: $(grep "loaded rules:" scan_output_verbose.txt)"
-        echo "Archivos en scope: $(grep "files in scope:" scan_output_verbose.txt)"
-        echo "Hallazgos totales: $(grep "findings:" scan_output_verbose.txt)"
-        
-        echo "\n--- Datos por Lenguaje ---"
-        echo "PHP: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php')"
-        echo "HTML: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html')"
-        echo "JavaScript: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript')"
-        echo "YAML: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml')"
-        echo "JSON: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json')"
-        echo "Dockerfile: $(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile')"
-        
-        echo "\n--- Datos de Severidad ---"
-        echo "Alta: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error')"
-        echo "Media: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning')"
-        echo "Baja: $(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info')"
-        
-        echo "\n--- Reglas Ejecutadas ---"
-        echo "$(grep 'Rules run:' scan_output_verbose.txt)"
-        
-        echo "\n=== FIN DE LOS DATOS ==="
+        echo "\n=== Métricas de Código ==="
+        echo "$CODE_METRICS"
 
     - name: Create Semgrep HTML Report
       run: |
@@ -441,7 +514,7 @@ jobs:
         <html>
         <head>
             <meta charset=\"UTF-8\">
-            <title>Análisis Semgrep</title>
+            <title>Análisis de Seguridad - Controllers</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -467,6 +540,7 @@ jobs:
                     padding: 20px;
                     border-radius: 8px;
                     text-align: center;
+                    border: 1px solid #eee;
                 }
                 .metric-title {
                     color: #666;
@@ -482,22 +556,30 @@ jobs:
                     color: #666;
                     margin-top: 5px;
                 }
-                .files-list {
-                    margin-top: 20px;
-                    padding: 15px;
-                    background: #f8f9fa;
+                .controller-section {
+                    margin: 20px 0;
+                    padding: 20px;
+                    background: #fff;
                     border-radius: 8px;
-                    max-height: 200px;
-                    overflow-y: auto;
+                    border: 1px solid #eee;
                 }
-                .files-list ul {
+                .findings-list {
                     list-style: none;
                     padding: 0;
-                    margin: 0;
                 }
-                .files-list li {
-                    padding: 5px 0;
-                    border-bottom: 1px solid #eee;
+                .finding-item {
+                    margin: 10px 0;
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-radius: 6px;
+                }
+                .security-pattern {
+                    display: inline-block;
+                    padding: 4px 8px;
+                    margin: 2px;
+                    border-radius: 4px;
+                    background: #e9ecef;
+                    font-size: 0.9em;
                 }
                 .section-title {
                     margin-top: 30px;
@@ -505,71 +587,99 @@ jobs:
                     border-bottom: 2px solid #eee;
                     padding-bottom: 10px;
                 }
+                .good { color: #28a745; }
+                .warning { color: #ffc107; }
+                .danger { color: #dc3545; }
+                .info { color: #17a2b8; }
             </style>
         </head>
         <body>
             <div class=\"container\">
-                <h1>Análisis de Seguridad con Semgrep</h1>
-                
-                <h2 class=\"section-title\">Resumen del Escaneo</h2>
+                <h1>Análisis de Seguridad - Controllers</h1>
+
+                <h2 class=\"section-title\">Resumen General</h2>
                 <div class=\"metric-grid\">
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Total de Archivos</div>
-                        <div class=\"metric-value\">268</div>
+                        <div class=\"metric-title\">Total Controllers</div>
+                        <div class=\"metric-value info\">$TOTAL_CONTROLLERS</div>
                         <div class=\"metric-detail\">Archivos analizados</div>
                     </div>
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Hallazgos</div>
-                        <div class=\"metric-value\">24</div>
-                        <div class=\"metric-detail\">Problemas detectados</div>
+                        <div class=\"metric-title\">Total Hallazgos</div>
+                        <div class=\"metric-value warning\">$TOTAL_FINDINGS</div>
+                        <div class=\"metric-detail\">Issues encontrados</div>
                     </div>
                     <div class=\"metric-card\">
-                        <div class=\"metric-title\">Reglas Aplicadas</div>
-                        <div class=\"metric-value\">294</div>
-                        <div class=\"metric-detail\">De 1054 reglas disponibles</div>
+                        <div class=\"metric-title\">Líneas de Código</div>
+                        <div class=\"metric-value info\">$TOTAL_LINES</div>
+                        <div class=\"metric-detail\">En Controllers</div>
                     </div>
                 </div>
 
-                <h2 class=\"section-title\">Distribución por Lenguaje</h2>
-                <div class=\"metric-grid\">
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">PHP</div>
-                        <div class=\"metric-value\">35</div>
-                        <div class=\"metric-detail\">37 reglas aplicadas</div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">HTML</div>
-                        <div class=\"metric-value\">109</div>
-                        <div class=\"metric-detail\">1 regla aplicada</div>
-                    </div>
-                    <div class=\"metric-card\">
-                        <div class=\"metric-title\">YAML</div>
-                        <div class=\"metric-value\">6</div>
-                        <div class=\"metric-detail\">31 reglas aplicadas</div>
+                <h2 class=\"section-title\">Análisis por Controller</h2>
+                
+                <div class=\"controller-section\">
+                    <h3>ContactController ($CONTACT_FINDINGS hallazgos)</h3>
+                    <div class=\"findings-list\">
+                        $CONTACT_DETAILS
                     </div>
                 </div>
 
-                <h2 class=\"section-title\">Archivos Omitidos</h2>
-                <div class=\"files-list\">
-                    <h3>Archivos Grandes (>1MB)</h3>
-                    <ul>
-                        <li>Informe de Proyecto de Pruebas.pdf</li>
-                        <li>public/mutations/infection.json</li>
-                        <li>reports/mutations/infection.json</li>
-                        <li>src/images/author-1.jpg</li>
-                        <li>src/images/author-4.jpg</li>
-                        <li>uploaded_img/test-image.jpg</li>
-                    </ul>
+                <div class=\"controller-section\">
+                    <h3>ProductController ($PRODUCT_FINDINGS hallazgos)</h3>
+                    <div class=\"findings-list\">
+                        $PRODUCT_DETAILS
+                    </div>
                 </div>
 
-                <h2 class=\"section-title\">Archivos con Errores de Parsing</h2>
-                <div class=\"files-list\">
-                    <ul>
-                        <li>.github/workflows/docker-publish.yml (1 línea)</li>
-                        <li>.github/workflows/docker-release.yml (2 líneas)</li>
-                        <li>.github/workflows/php-tests.yml (1 línea)</li>
-                        <li>.github/workflows/sync-repo.yml (1 línea)</li>
-                    </ul>
+                <div class=\"controller-section\">
+                    <h3>SearchController ($SEARCH_FINDINGS hallazgos)</h3>
+                    <div class=\"findings-list\">
+                        $SEARCH_DETAILS
+                    </div>
+                </div>
+
+                <div class=\"controller-section\">
+                    <h3>UserController ($USER_FINDINGS hallazgos)</h3>
+                    <div class=\"findings-list\">
+                        $USER_DETAILS
+                    </div>
+                </div>
+
+                <h2 class=\"section-title\">Patrones de Seguridad Detectados</h2>
+                <div class=\"controller-section\">
+                    <div class=\"metric-grid\">
+                        <div class=\"metric-card\">
+                            <div class=\"metric-title\">Password Hashing</div>
+                            <div class=\"metric-value good\">$PASSWORD_HASH_COUNT</div>
+                            <div class=\"metric-detail\">Implementaciones seguras</div>
+                        </div>
+                        <div class=\"metric-card\">
+                            <div class=\"metric-title\">Prepared Statements</div>
+                            <div class=\"metric-value good\">$PREPARED_STMT_COUNT</div>
+                            <div class=\"metric-detail\">Protección SQL Injection</div>
+                        </div>
+                        <div class=\"metric-card\">
+                            <div class=\"metric-title\">Error Logging</div>
+                            <div class=\"metric-value info\">$ERROR_LOG_COUNT</div>
+                            <div class=\"metric-detail\">Puntos de logging</div>
+                        </div>
+                        <div class=\"metric-card\">
+                            <div class=\"metric-title\">Input Validation</div>
+                            <div class=\"metric-value info\">$INPUT_VALIDATION_COUNT</div>
+                            <div class=\"metric-detail\">Validaciones</div>
+                        </div>
+                        <div class=\"metric-card\">
+                            <div class=\"metric-title\">Session Management</div>
+                            <div class=\"metric-value info\">$SESSION_MGMT_COUNT</div>
+                            <div class=\"metric-detail\">Usos de sesión</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class=\"section-title\">Métricas de Código</h2>
+                <div class=\"controller-section\">
+                    <pre class=\"code-metrics\">$CODE_METRICS</pre>
                 </div>
 
                 <div style=\"text-align: right; margin-top: 30px; color: #666;\">
@@ -580,7 +690,8 @@ jobs:
         </html>" > public/semgrep/index.html
 
     - name: Install Snyk
-      run: npm install -g snyk
+      run: |
+        python -m pip install snyk
 
     - name: Run Snyk Analysis
       env:
