@@ -402,11 +402,12 @@ jobs:
         
         # Ejecutar scan con todos los detalles
         semgrep scan \
+          --config "p/php" \
+          --config "p/security-audit" \
           --verbose \
           --no-git-ignore \
           --max-target-bytes=5000000 \
           --no-rewrite-rule-ids \
-          --metrics=off \
           --json | tee semgrep_results.json
         
         # Mostrar resumen de resultados
