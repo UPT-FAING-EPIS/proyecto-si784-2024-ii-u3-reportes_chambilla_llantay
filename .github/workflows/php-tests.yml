@@ -80,30 +80,39 @@ jobs:
       run: |
         echo "Ejecutando Infection tests..."
         
-        # Crear directorio para mutations
+        # Crear directorios
         mkdir -p public/mutations
-        mkdir -p coverage
+        mkdir -p coverage/coverage-xml
         
-        # Ejecutar PHPUnit primero
+        # Generar cobertura XML primero
+        echo "Generando cobertura XML..."
+        XDEBUG_MODE=coverage vendor/bin/phpunit \
+          --coverage-xml=coverage/coverage-xml \
+          --log-junit=coverage/junit.xml \
+          --coverage-filter=src
+        
+        # Ejecutar PHPUnit con testdox
         echo "Ejecutando PHPUnit..."
         vendor/bin/phpunit --testdox
         
-        # Ejecutar Infection
+        # Ejecutar Infection usando la cobertura generada
         echo "Ejecutando análisis de mutación..."
-        vendor/bin/infection \
+        XDEBUG_MODE=coverage vendor/bin/infection \
           --threads=4 \
           --only-covered \
           --skip-initial-tests \
           --coverage=coverage || true
         
         # Verificar el reporte
-        if [ -f "public/mutations/index.html" ]; then
+        if [ -f "public/mutations/infection.html" ]; then
           echo "✓ Reporte de mutations generado correctamente"
           ls -l public/mutations/
         else
           echo "✗ Error: El reporte de mutations no se generó"
           echo "Contenido de public/mutations:"
           ls -la public/mutations/
+          echo "Contenido de coverage/coverage-xml:"
+          ls -la coverage/coverage-xml/
         fi
 
     - name: Verify Mutations Report
