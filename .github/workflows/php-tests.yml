@@ -404,47 +404,9 @@ jobs:
         semgrep scan \
           --config "p/php" \
           --config "p/security-audit" \
-          --verbose
-
-    - name: Process Semgrep Results
-      if: always()
-      run: |
-        echo "📊 Procesando resultados..."
-        
-        # Verificar si existen los archivos
-        echo "Verificando archivos de resultados:"
-        ls -la scan_results/
-        ls -la scan_output_verbose.txt || echo "No existe scan_output_verbose.txt"
-        
-        # Función para limpiar números
-        clean_number() {
-          echo "$1" | tr -dc '0-9' || echo '0'
-        }
-        
-        # Mostrar contenido del archivo de salida
-        echo "=== 📑 CONTENIDO DEL ARCHIVO DE SALIDA ==="
-        cat scan_output_verbose.txt || echo "No hay archivo de salida"
-        
-        # Extraer datos básicos
-        RULES=$(clean_number "$(grep "loaded rules:" scan_output_verbose.txt 2>/dev/null || echo '0')")
-        FILES=$(clean_number "$(grep "files in scope:" scan_output_verbose.txt 2>/dev/null || echo '0')")
-        FINDINGS=$(clean_number "$(grep "findings:" scan_output_verbose.txt 2>/dev/null || echo '0')")
-        
-        # Exportar variables básicas
-        {
-          echo "TOTAL_RULES=$RULES"
-          echo "TOTAL_FILES=$FILES"
-          echo "TOTAL_FINDINGS=$FINDINGS"
-          
-          echo "SCAN_SUMMARY<<EOF"
-          echo "=== 📊 RESUMEN DEL AN��LISIS ==="
-          echo "• Reglas: $RULES"
-          echo "• Archivos: $FILES"
-          echo "• Hallazgos: $FINDINGS"
-          echo "EOF"
-        } >> $GITHUB_ENV
-        
-        echo "=== 🏁 PROCESAMIENTO COMPLETADO ==="
+          --verbose \
+          --no-git-ignore \
+          --max-target-bytes=5000000
 
     - name: Create Semgrep HTML Report
       run: |
