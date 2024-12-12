@@ -401,26 +401,48 @@ jobs:
 
     - name: Process Semgrep Results
       run: |
-        # Extraer datos del scan usando patrones más específicos
-        echo "TOTAL_RULES=$(grep "loaded rules:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "TOTAL_FILES=$(grep "files in scope:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "TOTAL_FINDINGS=$(grep "findings:" scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-
-        # Extraer datos por lenguaje de manera más precisa
-        echo "PHP_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "HTML_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "JS_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "YAML_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "JSON_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "DOCKERFILE_FILES=$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-
+        # Función para limpiar números
+        clean_number() {
+          echo "$1" | tr -dc '0-9' || echo '0'
+        }
+        
+        # Extraer y limpiar datos
+        RULES=$(clean_number "$(grep "loaded rules:" scan_output_verbose.txt || echo '0')")
+        FILES=$(clean_number "$(grep "files in scope:" scan_output_verbose.txt || echo '0')")
+        FINDINGS=$(clean_number "$(grep "findings:" scan_output_verbose.txt || echo '0')")
+        
+        # Extraer datos por lenguaje
+        PHP=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'php' || echo '0')")
+        HTML=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'html' || echo '0')")
+        JS=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'javascript' || echo '0')")
+        YAML=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'yaml' || echo '0')")
+        JSON=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'json' || echo '0')")
+        DOCKER=$(clean_number "$(grep -A 10 'Scan Status' scan_output_verbose.txt | grep 'dockerfile' || echo '0')")
+        
         # Extraer datos de severidad
-        echo "HIGH_SEVERITY=$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "MED_SEVERITY=$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-        echo "LOW_SEVERITY=$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info' | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
-
+        HIGH=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'error' || echo '0')")
+        MED=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'warning' || echo '0')")
+        LOW=$(clean_number "$(grep -A 5 'Findings by Severity' scan_output_verbose.txt | grep 'info' || echo '0')")
+        
         # Extraer reglas ejecutadas
-        echo "RULES_RUN=$(grep 'Rules run:' scan_output_verbose.txt | grep -o '[0-9]\+' || echo '0')" >> $GITHUB_ENV
+        RUN=$(clean_number "$(grep 'Rules run:' scan_output_verbose.txt || echo '0')")
+        
+        # Exportar variables limpias
+        {
+          echo "TOTAL_RULES=$RULES"
+          echo "TOTAL_FILES=$FILES"
+          echo "TOTAL_FINDINGS=$FINDINGS"
+          echo "PHP_FILES=$PHP"
+          echo "HTML_FILES=$HTML"
+          echo "JS_FILES=$JS"
+          echo "YAML_FILES=$YAML"
+          echo "JSON_FILES=$JSON"
+          echo "DOCKERFILE_FILES=$DOCKER"
+          echo "HIGH_SEVERITY=$HIGH"
+          echo "MED_SEVERITY=$MED"
+          echo "LOW_SEVERITY=$LOW"
+          echo "RULES_RUN=$RUN"
+        } >> $GITHUB_ENV
 
     - name: Create Semgrep HTML Report
       run: |
