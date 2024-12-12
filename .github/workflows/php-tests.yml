@@ -406,13 +406,13 @@ jobs:
           --config "p/security-audit" \
           --config "p/owasp-top-ten" \
           --config "p/ci" \
-          --verbose \
           --no-git-ignore \
           --max-target-bytes=5000000 \
           --no-rewrite-rule-ids \
           --include "src/Controllers/*.php" \
-          --quiet \
-          --json | tee semgrep_results.json
+          --severity ERROR \
+          --severity WARNING \
+          --json > semgrep_results.json
 
         echo -e "\n📊 ANÁLISIS DETALLADO POR CONTROLADOR"
         echo "====================================="
