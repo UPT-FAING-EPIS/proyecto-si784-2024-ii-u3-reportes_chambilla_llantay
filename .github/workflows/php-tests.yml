@@ -84,26 +84,17 @@ jobs:
         mkdir -p public/mutations
         mkdir -p coverage
         
-        # Generar cobertura primero
-        echo "Generando cobertura con PHPUnit..."
-        XDEBUG_MODE=coverage vendor/bin/phpunit \
-          --coverage-xml=coverage/coverage-xml \
-          --log-junit=coverage/junit.xml \
-          --testsuite=Unit \
-          --coverage-filter=src || true
+        # Ejecutar PHPUnit primero
+        echo "Ejecutando PHPUnit..."
+        vendor/bin/phpunit --testdox
         
         # Ejecutar Infection
         echo "Ejecutando análisis de mutación..."
         vendor/bin/infection \
           --threads=4 \
-          --coverage=coverage \
           --only-covered \
           --skip-initial-tests \
-          --ignore-msi-with-no-mutations \
-          --no-progress \
-          --show-mutations \
-          --formatter=html \
-          --output=public/mutations/index.html || true
+          --coverage=coverage || true
         
         # Verificar el reporte
         if [ -f "public/mutations/index.html" ]; then
