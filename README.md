@@ -20,6 +20,8 @@
 ### Documento Informe de Calidad
 **Versión 1.0**
 
+Video: https://drive.google.com/file/d/1BfsJbHHvFcOMGCkxCgBDoT-UH_8OcSNM/view?usp=sharing
+
 ### Control de Versiones
 
 | Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
