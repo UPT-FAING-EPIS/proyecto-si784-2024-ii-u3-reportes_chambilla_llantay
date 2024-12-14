@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Análisis de Seguridad Semgrep</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .metric {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .patterns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .pattern-item {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .functions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .function-item {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            border-left: 3px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Análisis de Seguridad con Semgrep</h1>
+        
+        <div class="summary">
+            <h2>Resumen del Escaneo</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Archivos Analizados</h3>
+                    <p>6 archivos</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Líneas</h3>
+                    <p>1033 líneas</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Código Seguro</h3>
+                    <p>100.00%</p>
+                </div>
+            </div>
+        </div>
+
+        <h2>Hallazgos por Archivo</h2>
+        <div class="finding"><div class="file-header"></div><div class="issue"><div class="issue-title">Análisis de Seguridad</div><div class="details"><div class="metrics-grid"><div class="metric">Líneas totales: 431</div><div class="patterns"><span class="pattern-item">POST: 0</span>
+<span class="pattern-item">GET: 0</span>
+<span class="pattern-item">SQL: 2</span>
+<span class="pattern-item">Validaciones: 1</span>
+<span class="pattern-item">Try-Catch: 12</span></div></div><h4>Funciones detectadas:</h4><div class="functions-list"><div class="function-item">16:    public function __construct($conn) {</div>
+<div class="function-item">20:    public function getDashboardData() {</div>
+<div class="function-item">36:    public function getTotalPendings() {</div>
+<div class="function-item">53:    private function getTotalCompleted() {</div>
+<div class="function-item">66:    private function getOrdersCount() {</div>
+<div class="function-item">73:    private function getProductsCount() {</div>
+<div class="function-item">80:    private function getUsersCount() {</div>
+<div class="function-item">87:    private function getAdminsCount() {</div>
+<div class="function-item">94:    private function getTotalAccounts() {</div>
+<div class="function-item">101:    private function getMessagesCount() {</div>
+<div class="function-item">108:    private function handleDatabaseError($e) {</div>
+<div class="function-item">113:    public function addProduct($postData, $files) {</div>
+<div class="function-item">143:    public function deleteProduct($id) {</div>
+<div class="function-item">168:    private function validateImageName($imageName) {</div>
+<div class="function-item">173:    private function getSecureImagePath($imageName) {</div>
+<div class="function-item">200:    private function handleImageDelete($imageName) {</div>
+<div class="function-item">237:    public function updateProduct($postData, $files) {</div>
+<div class="function-item">304:    public function getAllProducts() {</div>
+<div class="function-item">318:    public function getAllOrders() {</div>
+<div class="function-item">340:    public function updateOrderStatus($orderId, $status) {</div>
+<div class="function-item">354:    public function deleteOrder($orderId) {</div>
+<div class="function-item">367:    public function getAllUsers() {</div>
+<div class="function-item">388:    public function deleteUser($userId) {</div>
+<div class="function-item">401:    public function getAllMessages() {</div>
+<div class="function-item">422:    public function deleteMessage($messageId) {</div></div></div></div></div><div class="finding"><div class="file-header"></div><div class="issue"><div class="issue-title">Análisis de Seguridad</div><div class="details"><div class="metrics-grid"><div class="metric">Líneas totales: 64</div><div class="patterns"><span class="pattern-item">POST: 0</span>
+<span class="pattern-item">GET: 0</span>
+<span class="pattern-item">SQL: 0</span>
+<span class="pattern-item">Validaciones: 0</span>
+<span class="pattern-item">Try-Catch: 1</span></div></div><h4>Funciones detectadas:</h4><div class="functions-list"><div class="function-item">12:    public function __construct($conn) {</div>
+<div class="function-item">17:    protected function createUser()</div>
+<div class="function-item">22:    protected function createMessage()</div>
+<div class="function-item">27:    public function sendMessage($userData) {</div></div></div></div></div><div class="finding"><div class="file-header"></div><div class="issue"><div class="issue-title">Análisis de Seguridad</div><div class="details"><div class="metrics-grid"><div class="metric">Líneas totales: 258</div><div class="patterns"><span class="pattern-item">POST: 0</span>
+<span class="pattern-item">GET: 0</span>
+<span class="pattern-item">SQL: 1</span>
+<span class="pattern-item">Validaciones: 0</span>
+<span class="pattern-item">Try-Catch: 8</span></div></div><h4>Funciones detectadas:</h4><div class="functions-list"><div class="function-item">14:    public function __construct($conn) {</div>
+<div class="function-item">18:    public function getOrders($userId) {</div>
+<div class="function-item">45:    public function updatePaymentStatus($orderId, $status) {</div>
+<div class="function-item">55:    public function deleteOrder($orderId) {</div>
+<div class="function-item">65:    public function getAllOrders() {</div>
+<div class="function-item">88:    public function createOrder($userData, $userId) {</div>
+<div class="function-item">182:    private function getCartItems($userId) {</div>
+<div class="function-item">188:    private function clearCart($userId) {</div>
+<div class="function-item">193:    public function getUserOrders($userId) {</div>
+<div class="function-item">219:    public function getAllProducts() {</div>
+<div class="function-item">237:    public function getAllUsers() {</div>
+<div class="function-item">256:    private function handleDatabaseError(\Exception $e) {</div></div></div></div></div><div class="finding"><div class="file-header"></div><div class="issue"><div class="issue-title">Análisis de Seguridad</div><div class="details"><div class="metrics-grid"><div class="metric">Líneas totales: 145</div><div class="patterns"><span class="pattern-item">POST: 0</span>
+<span class="pattern-item">GET: 0</span>
+<span class="pattern-item">SQL: 0</span>
+<span class="pattern-item">Validaciones: 0</span>
+<span class="pattern-item">Try-Catch: 7</span></div></div><h4>Funciones detectadas:</h4><div class="functions-list"><div class="function-item">13:    public function __construct($conn) {</div>
+<div class="function-item">17:    public function getLatestProducts($limit = 6) {</div>
+<div class="function-item">40:    public function addToCart($userId, $productData) {</div>
+<div class="function-item">77:    public function getAllProducts() {</div>
+<div class="function-item">99:    public function getCartItems($userId) {</div>
+<div class="function-item">111:    public function updateCartQuantity($cartId, $quantity) {</div>
+<div class="function-item">123:    public function deleteCartItem($cartId) {</div>
+<div class="function-item">135:    public function deleteAllCartItems($userId) {</div></div></div></div></div><div class="finding"><div class="file-header"></div><div class="issue"><div class="issue-title">Análisis de Seguridad</div><div class="details"><div class="metrics-grid"><div class="metric">Líneas totales: 22</div><div class="patterns"><span class="pattern-item">POST: 0</span>
+<span class="pattern-item">GET: 0</span>
+<span class="pattern-item">SQL: 0</span>
+<span class="pattern-item">Validaciones: 0</span>
+<span class="pattern-item">Try-Catch: 1</span></div></div><h4>Funciones detectadas:</h4><div class="functions-list"><div class="function-item">7:    public function __construct($conn) {</div>
+<div class="function-item">11:    public function searchProducts($searchTerm) {</div></div></div></div></div><div class="finding"><div class="file-header"></div><div class="issue"><div class="issue-title">Análisis de Seguridad</div><div class="details"><div class="metrics-grid"><div class="metric">Líneas totales: 113</div><div class="patterns"><span class="pattern-item">POST: 0</span>
+<span class="pattern-item">GET: 0</span>
+<span class="pattern-item">SQL: 0</span>
+<span class="pattern-item">Validaciones: 0</span>
+<span class="pattern-item">Try-Catch: 4</span></div></div><h4>Funciones detectadas:</h4><div class="functions-list"><div class="function-item">10:    public function __construct($conn) {</div>
+<div class="function-item">14:    private function hashPassword($password) {</div>
+<div class="function-item">18:    private function verifyPassword($password, $hashedPassword) {</div>
+<div class="function-item">22:    public function registerUser($userData) {</div>
+<div class="function-item">56:    public function loginUser($email, $password) {</div>
+<div class="function-item">77:    public function logout() {</div>
+<div class="function-item">99:    public function getUserById($userId) {</div>
+<div class="function-item">111:    public function register($userData) {</div></div></div></div></div>
+
+        <div class="summary">
+            <h2>Notas Adicionales</h2>
+            <ul>
+                <li>Análisis completado: 2024-12-14 00:45:20</li>
+                <li>Total archivos analizados: 6</li>
+                <li>Total líneas de código: 1033</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
